@@ -1,4 +1,4 @@
-from Valkyrie.src.environment.env_factory import EnvFactory
+from environment.env_factory import EnvFactory
 from tf_agents.environments import suite_atari, suite_gym, tf_py_environment, batched_py_environment, parallel_py_environment
 
 
