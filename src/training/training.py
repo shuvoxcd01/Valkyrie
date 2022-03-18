@@ -4,20 +4,24 @@ from tf_agents.drivers.driver import Driver
 from tf_agents.environments import TFEnvironment, PyEnvironment
 from typing import Union
 import tensorflow as tf
-
+from tf_agents.environments import TFEnvironment, PyEnvironment
+from tf_agents.policies import py_policy, tf_policy, py_tf_eager_policy
 from replay_buffer.replay_buffer_manager import ReplayBufferManager
 
 
 class Training:
-    def __init__(self, agent: TFAgent, collect_driver: Driver, eval_env: Union[TFEnvironment, PyEnvironment], replay_buffer_manager: ReplayBufferManager, logdir: str) -> None:
+    def __init__(self, agent: TFAgent, collect_driver: Driver, train_env: Union[TFEnvironment, PyEnvironment],
+                 eval_env: Union[TFEnvironment, PyEnvironment], replay_buffer_manager: ReplayBufferManager,
+                 logdir: str) -> None:
         self.agent = agent
         self.collect_driver = collect_driver
+        self.train_env = train_env
         self.eval_env = eval_env
         self.replay_buffer_manager = replay_buffer_manager
         self.logger = tf.get_logger()
         self.summary_writer = tf.summary.create_file_writer(logdir)
 
-    def compute_avg_return(self, environment, policy, num_episodes=10):
+    def compute_avg_return(self, environment: PyEnvironment, policy: py_policy.PyPolicy, num_episodes: int = 10):
         total_return = 0.0
 
         for _ in range(num_episodes):
@@ -31,22 +35,23 @@ class Training:
             total_return += episode_return
 
         avg_return = total_return / num_episodes
-        return avg_return.numpy()[0]
+        return avg_return
 
-    def train_agent(self, num_iterations, num_eval_episodes, log_interval, eval_interval, batch_size=32):
+    def train_agent(self, num_iterations: int, num_eval_episodes: int, log_interval: int, eval_interval: int, batch_size: int = 32):
         self.agent.train = common.function(self.agent.train)
 
         self.agent.train_step_counter.assign(0)
 
         avg_return = self.compute_avg_return(
-            self.eval_env, self.agent.policy, num_eval_episodes)
+            self.eval_env,  py_tf_eager_policy.PyTFEagerPolicy(
+                self.agent.policy, use_tf_function=True), num_eval_episodes)
         returns = [avg_return]
 
         iterator = self.replay_buffer_manager.get_dataset_iterator(
             num_parallel_calls=3, batch_size=batch_size, num_steps=2, num_prefetch=3)
 
         for _ in range(num_iterations):
-            self.collect_driver.run()
+            self.collect_driver.run(self.train_env.reset())
 
             experience, unused_info = next(iterator)
             train_loss = self.agent.train(experience).loss
@@ -59,12 +64,12 @@ class Training:
 
             if step % eval_interval == 0:
                 avg_return = self.compute_avg_return(
-                    self.eval_env, self.agent.policy, num_eval_episodes)
+                    self.eval_env, py_tf_eager_policy.PyTFEagerPolicy(self.agent.policy, use_tf_function=True), num_eval_episodes)
                 self.logger.info('step = {0}: Average Return = {1}'.format(
                     step, avg_return))
                 returns.append(avg_return)
 
-                #global_step = tf.compat.v1.train.get_global_step()
+                # global_step = tf.compat.v1.train.get_global_step()
 
                 # train_checkpointer.save(global_step)
 
