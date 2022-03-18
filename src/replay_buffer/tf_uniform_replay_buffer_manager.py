@@ -5,7 +5,8 @@ from replay_buffer.replay_buffer_manager import ReplayBufferManager
 
 class TFUniformReplayBufferManager(ReplayBufferManager):
     def __init__(self, data_spec, batch_size, max_length) -> None:
-        self.data_spec = data_spec
+        super().__init__(data_spec=data_spec)
+
         self.batch_size = batch_size
         self.max_length = max_length
         self.replay_buffer = self.create_replay_buffer()

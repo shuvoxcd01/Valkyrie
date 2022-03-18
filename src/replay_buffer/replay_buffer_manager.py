@@ -2,6 +2,9 @@ from abc import ABC, abstractmethod
 
 
 class ReplayBufferManager(ABC):
+    def __init__(self, data_spec) -> None:
+        self.data_spec = data_spec
+
     @abstractmethod
     def get_replay_buffer(self):
         pass
