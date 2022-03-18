@@ -75,7 +75,7 @@ class Training:
 
                 # global_step = tf.compat.v1.train.get_global_step()
 
-            self.train_checkpointer.save(global_step=step)
+                self.train_checkpointer.save(global_step=step)
 
         # Save the policy at the end of training so that it can be easily deployed.
         # tf_policy_saver.save(policy_dir)
