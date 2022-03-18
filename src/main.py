@@ -9,12 +9,14 @@ from replay_buffer.replay_buffer_manager import ReplayBufferManager
 from training.training import Training
 import tensorflow as tf
 from tf_agents.policies import random_tf_policy, random_py_policy, py_tf_eager_policy
+from tf_agents.utils import common
+import os
 
 NUM_ITERATIONS = 250000
 
 INITIAL_COLLECT_STEPS = 200
 COLLECT_STEPS_PER_ITERATION = 10
-REPLAY_BUFFER_MAX_LENGTH = 1000
+REPLAY_BUFFER_MAX_LENGTH = 100000
 
 BATCH_SIZE = 32
 LEARNING_RATE = 2.5e-3
@@ -59,6 +61,8 @@ agent_policy = py_tf_eager_policy.PyTFEagerPolicy(
 agent_collect_policy = py_tf_eager_policy.PyTFEagerPolicy(
     agent.collect_policy, use_tf_function=True)
 
+print(agent.name)
+
 replay_buffer_manager = ReverbReplayBufferManager(
     data_spec=agent.collect_data_spec, replay_buffer_capacity=REPLAY_BUFFER_MAX_LENGTH)
 replay_buffer_observer = replay_buffer_manager.get_observer()
@@ -77,10 +81,20 @@ initial_collect_driver = driver_factory.get_driver(
 collect_driver = driver_factory.get_driver(
     policy=agent_collect_policy, num_steps=COLLECT_STEPS_PER_ITERATION)
 
+checkpoint_dir = os.path.join(os.path.dirname(__file__), "checkpoint")
+
+checkpointer = common.Checkpointer(
+    ckpt_dir=checkpoint_dir,
+    max_to_keep=1,
+    agent=agent,
+    policy=agent.policy,
+    replay_buffer=replay_buffer_manager.replay_buffer
+)
+
 training = Training(agent=agent, collect_driver=collect_driver, train_env=train_env, eval_env=eval_env,
-                    replay_buffer_manager=replay_buffer_manager, logdir="./logs")
+                    replay_buffer_manager=replay_buffer_manager, logdir="./logs", train_checkpointer=checkpointer)
 
 initial_collect_driver.run(train_env.reset())
 
-training.train_agent(num_iterations=10, num_eval_episodes=2,
-                     log_interval=1, eval_interval=1, batch_size=4)
+training.train_agent(num_iterations=NUM_ITERATIONS, num_eval_episodes=NUM_EVAL_EPISODES,
+                     log_interval=LOG_INTERVAL, eval_interval=EVAL_INTERVAL, batch_size=BATCH_SIZE)
