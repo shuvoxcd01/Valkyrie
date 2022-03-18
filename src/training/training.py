@@ -12,7 +12,7 @@ from replay_buffer.replay_buffer_manager import ReplayBufferManager
 class Training:
     def __init__(self, agent: TFAgent, collect_driver: Driver, train_env: Union[TFEnvironment, PyEnvironment],
                  eval_env: Union[TFEnvironment, PyEnvironment], replay_buffer_manager: ReplayBufferManager,
-                 logdir: str) -> None:
+                 logdir: str, train_checkpointer) -> None:
         self.agent = agent
         self.collect_driver = collect_driver
         self.train_env = train_env
@@ -20,6 +20,7 @@ class Training:
         self.replay_buffer_manager = replay_buffer_manager
         self.logger = tf.get_logger()
         self.summary_writer = tf.summary.create_file_writer(logdir)
+        self.train_checkpointer = train_checkpointer
 
     def compute_avg_return(self, environment: PyEnvironment, policy: py_policy.PyPolicy, num_episodes: int = 10):
         total_return = 0.0
@@ -67,11 +68,14 @@ class Training:
                     self.eval_env, py_tf_eager_policy.PyTFEagerPolicy(self.agent.policy, use_tf_function=True), num_eval_episodes)
                 self.logger.info('step = {0}: Average Return = {1}'.format(
                     step, avg_return))
+                with self.summary_writer.as_default():
+                    tf.summary.scalar("Average return", avg_return, step=step)
+                    self.summary_writer.flush()
                 returns.append(avg_return)
 
                 # global_step = tf.compat.v1.train.get_global_step()
 
-                # train_checkpointer.save(global_step)
+            self.train_checkpointer.save(global_step=step)
 
         # Save the policy at the end of training so that it can be easily deployed.
         # tf_policy_saver.save(policy_dir)
