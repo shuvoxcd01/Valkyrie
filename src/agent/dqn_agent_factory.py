@@ -5,8 +5,8 @@ from tf_agents.agents.dqn import dqn_agent
 
 class DqnAgentFactory(AgentFactory):
     def __init__(self, time_step_spec, action_spec, q_network, optimizer,
-                 target_update_period, train_step_counter, epsilon_greedy=0.01,
-                 n_step_update=1.0, target_update_tau=1.0, td_errors_loss_fn=common.element_wise_huber_loss,
+                 target_update_period, train_step_counter, epsilon_greedy=0.1,
+                 n_step_update=1.0, target_update_tau=1.0, td_errors_loss_fn=common.element_wise_squared_loss,
                  gamma=0.99, reward_scale_factor=1.0, gradient_clipping=None, debug_summaries=False,
                  summarize_grads_and_vars=False) -> None:
         super().__init__()
