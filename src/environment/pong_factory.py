@@ -18,7 +18,4 @@ class PongFactory(EnvFactory):
 
         return py_env
 
-    def get_tf_env(self):
-        tf_env = tf_py_environment.TFPyEnvironment(self.get_py_env())
 
-        return tf_env
