@@ -1,4 +1,6 @@
 from pickletools import optimize
+from agent.ddqn_agent_factory import DdqnAgentFactory
+from environment.cartpole_factory import CartPoleFactory
 from driver.py_driver_factory import PyDriverFactory
 from replay_buffer.reverb_replay_buffer_manager import ReverbReplayBufferManager
 from agent.dqn_agent_factory import DqnAgentFactory
@@ -11,28 +13,34 @@ import tensorflow as tf
 from tf_agents.policies import random_tf_policy, random_py_policy, py_tf_eager_policy
 from tf_agents.utils import common
 import os
+from tf_agents.environments import suite_atari, suite_gym, tf_py_environment, batched_py_environment, parallel_py_environment
+
 
 NUM_ITERATIONS = 250000
 
-INITIAL_COLLECT_STEPS = 200
-COLLECT_STEPS_PER_ITERATION = 10
+INITIAL_COLLECT_STEPS = 100
+COLLECT_STEPS_PER_ITERATION = 1
 REPLAY_BUFFER_MAX_LENGTH = 100000
 
-BATCH_SIZE = 32
-LEARNING_RATE = 2.5e-3
-LOG_INTERVAL = 100
+BATCH_SIZE = 64
+LEARNING_RATE = 0.001
+LOG_INTERVAL = 200
 
-NUM_EVAL_EPISODES = 5
+NUM_EVAL_EPISODES = 10
 EVAL_INTERVAL = 1000
-TARGET_UPDATE_PERIOD = 500
+TARGET_UPDATE_PERIOD = 50
 
 FC_LAYER_PARAMS = (512,)
-CONV_LAYER_PARAMS = ((32, (8, 8), 4), (64, (4, 4), 2), (64, (3, 3), 1))
+CONV_LAYER_PARAMS = None  # ((32, (8, 8), 4), (64, (4, 4), 2), (64, (3, 3), 1))
 
-env_factory = PongFactory()
-train_env = env_factory.get_py_env()
-eval_env = env_factory.get_py_env()
+env_factory = CartPoleFactory()
+
+train_py_env = env_factory.get_py_env()
+train_env = tf_py_environment.TFPyEnvironment(train_py_env)
+eval_env = env_factory.get_tf_env()
+
 train_env_observation_spec = train_env.observation_spec()
+# assert train_env.observation_spec() == eval_env.observation_spec()
 action_spec = train_env.action_spec()
 time_step_spec = train_env.time_step_spec()
 
@@ -42,23 +50,22 @@ network_factory = AtariQNetworkFactory(input_tensor_spec=train_env_observation_s
                                        fc_layer_params=FC_LAYER_PARAMS)
 network = network_factory.get_network()
 
-optimizer = tf.keras.optimizers.RMSprop(
-    learning_rate=LEARNING_RATE,
-    decay=0.95,
-    momentum=0.0,
-    epsilon=0.00001,
-    centered=True
-)
+optimizer = tf.keras.optimizers.Adam(learning_rate=LEARNING_RATE)
 
-agent_factory = DqnAgentFactory(
+agent_factory = DdqnAgentFactory(
     time_step_spec=time_step_spec, action_spec=action_spec,
     q_network=network, optimizer=optimizer, target_update_period=TARGET_UPDATE_PERIOD,
     train_step_counter=tf.Variable(0))
 
 agent = agent_factory.get_agent()
-agent_policy = py_tf_eager_policy.PyTFEagerPolicy(
+# agent_policy = py_tf_eager_policy.PyTFEagerPolicy(
+#     agent.policy, use_tf_function=True)
+# agent_collect_policy = py_tf_eager_policy.PyTFEagerPolicy(
+#     agent.collect_policy, use_tf_function=True)
+
+agent_py_policy = py_tf_eager_policy.PyTFEagerPolicy(
     agent.policy, use_tf_function=True)
-agent_collect_policy = py_tf_eager_policy.PyTFEagerPolicy(
+agent_py_collect_policy = py_tf_eager_policy.PyTFEagerPolicy(
     agent.collect_policy, use_tf_function=True)
 
 print(agent.name)
@@ -68,7 +75,7 @@ replay_buffer_manager = ReverbReplayBufferManager(
 replay_buffer_observer = replay_buffer_manager.get_observer()
 
 driver_factory = PyDriverFactory(
-    env=train_env, observers=[replay_buffer_observer])
+    env=train_py_env, observers=[replay_buffer_observer])
 
 random_policy = random_py_policy.RandomPyPolicy(
     time_step_spec=time_step_spec,
@@ -79,22 +86,22 @@ initial_collect_driver = driver_factory.get_driver(
     policy=random_policy, num_steps=INITIAL_COLLECT_STEPS)
 
 collect_driver = driver_factory.get_driver(
-    policy=agent_collect_policy, num_steps=COLLECT_STEPS_PER_ITERATION)
+    policy=agent_py_collect_policy, num_steps=COLLECT_STEPS_PER_ITERATION)
 
-checkpoint_dir = os.path.join(os.path.dirname(__file__), "checkpoint")
+# checkpoint_dir = os.path.join(os.path.dirname(__file__), "checkpoint")
 
-checkpointer = common.Checkpointer(
-    ckpt_dir=checkpoint_dir,
-    max_to_keep=1,
-    agent=agent,
-    policy=agent.policy,
-    replay_buffer=replay_buffer_manager.replay_buffer
-)
+# checkpointer = common.Checkpointer(
+#     ckpt_dir=checkpoint_dir,
+#     max_to_keep=1,
+#     agent=agent,
+#     policy=agent.policy,
+#     replay_buffer=replay_buffer_manager.replay_buffer
+# )
 
-training = Training(agent=agent, collect_driver=collect_driver, train_env=train_env, eval_env=eval_env,
-                    replay_buffer_manager=replay_buffer_manager, logdir="./logs", train_checkpointer=checkpointer)
+training = Training(agent=agent, collect_driver=collect_driver, train_env=train_py_env, eval_env=eval_env,
+                    replay_buffer_manager=replay_buffer_manager, logdir="./logs", train_checkpointer=None)
 
-initial_collect_driver.run(train_env.reset())
+initial_collect_driver.run(train_py_env.reset())
 
 training.train_agent(num_iterations=NUM_ITERATIONS, num_eval_episodes=NUM_EVAL_EPISODES,
                      log_interval=LOG_INTERVAL, eval_interval=EVAL_INTERVAL, batch_size=BATCH_SIZE)
