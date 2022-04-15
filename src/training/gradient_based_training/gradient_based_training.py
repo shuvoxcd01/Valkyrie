@@ -13,25 +13,33 @@ from fitness_evaluator.fitness_evaluator import FitnessEvaluator
 from replay_buffer.replay_buffer_manager import ReplayBufferManager
 import os
 from tf_agents.utils.common import Checkpointer
+import logging
 
 
 class GradientBasedTraining:
     def __init__(self, train_env: Union[TFEnvironment, PyEnvironment],
                  replay_buffer_manager: ReplayBufferManager,
-                 replay_buffer_checkpointer:Checkpointer,
+                 replay_buffer_checkpointer: Checkpointer,
+                 initial_collect_driver: Driver,
                  fitness_evaluator: FitnessEvaluator,
                  num_train_iteration: int, log_interval: int, eval_interval: int,
                  batch_size: int = 32) -> None:
 
         self.train_env = train_env
         self.replay_buffer_manager = replay_buffer_manager
-        self.logger = tf.get_logger()
+        self.logger = logging.getLogger()
         self.replay_buffer_checkpointer = replay_buffer_checkpointer
         self.fitness_evaluator = fitness_evaluator
         self.num_train_iteration = num_train_iteration
         self.eval_interval = eval_interval
         self.log_interval = log_interval
         self.batch_size = batch_size
+        self.initial_collect_driver = initial_collect_driver
+
+        self._initialize()
+
+    def _initialize(self):
+        self.initial_collect_driver.run(self.train_env.reset())
 
     # def _get_summary_writer(self):
     #     summary_writer_dir = os.path.join(self.base_summary_writer_dir, agent.name)
@@ -39,7 +47,7 @@ class GradientBasedTraining:
 
     #     return summary_writer
 
-    def compute_avg_return(self, policy):
+    def _compute_avg_return(self, policy):
         avg_return = self.fitness_evaluator.evaluate_fitness(policy)
 
         return avg_return
@@ -50,7 +58,7 @@ class GradientBasedTraining:
 
         agent.train_step_counter.assign(0)
 
-        avg_return = self.compute_avg_return(agent.policy)
+        avg_return = self._compute_avg_return(agent.policy)
         returns = [avg_return]
 
         iterator = self.replay_buffer_manager.get_dataset_iterator(
@@ -69,7 +77,7 @@ class GradientBasedTraining:
                     'step = {0}: loss = {1}'.format(step, train_loss))
 
             if step % self.eval_interval == 0:
-                avg_return = self.compute_avg_return(agent.policy)
+                avg_return = self._compute_avg_return(agent.policy)
                 self.logger.info('step = {0}: Average Return = {1}'.format(
                     step, avg_return))
                 # with summary_writer.as_default():
@@ -77,13 +85,13 @@ class GradientBasedTraining:
                 #     summary_writer.flush()
                 returns.append(avg_return)
 
-                # global_step = tf.compat.v1.train.get_global_step()
-
                 agent_checkpointer.save(global_step=step)
 
         # Save the policy at the end of training so that it can be easily deployed.
         # tf_policy_saver.save(policy_dir)
         agent_checkpointer.save(agent.train_step_counter.numpy())
-        self.replay_buffer_checkpointer.save()
+
+        global_step = tf.compat.v1.train.get_global_step()
+        self.replay_buffer_checkpointer.save(global_step=global_step)
 
         return agent
