@@ -132,3 +132,5 @@ test_*
 logs/*
 checkpoint/*
 src/checkpoint/*
+checkpoints/*
+src/checkpoints/*
