@@ -12,7 +12,12 @@ from network.atari_q_network_factory import AtariQNetworkFactory
 from environment.cartpole_factory import CartPoleFactory
 from agent.tf_agent.ddqn_agent_factory import DdqnAgentFactory
 from tf_agents.environments import suite_atari, suite_gym, tf_py_environment, batched_py_environment, parallel_py_environment
+import logging
+from tf_agents.policies import random_tf_policy, random_py_policy, py_tf_eager_policy
 
+
+logger = logging.getLogger()
+logger.setLevel(logging.DEBUG)
 
 FC_LAYER_PARAMS = (512,)
 CONV_LAYER_PARAMS = None  # ((32, (8, 8), 4), (64, (4, 4), 2), (64, (3, 3), 1))
@@ -23,10 +28,11 @@ REPLAY_BUFFER_MAX_LENGTH = 100000
 BATCH_SIZE = 64
 LOG_INTERVAL = 200
 NUM_EVAL_EPISODES = 10
-EVAL_INTERVAL = 1000
+EVAL_INTERVAL = 200
+INITIAL_COLLECT_STEPS = 100
 
 POPSIZE = 5
-NUM_GRADIENT_BASED_TRAINING_EPOCH = 10000
+NUM_GRADIENT_BASED_TRAINING_EPOCH = 1000
 CHECKPOINT_BASE_DIR = os.path.join(os.path.dirname(__file__), "checkpoints")
 
 initial_population = []
@@ -77,15 +83,24 @@ replay_buffer_checkpointer = replay_buffer_checkpoint_manager.create_or_initiali
 fitness_evaluator = FitnessEvaluator(
     environment=eval_env, num_episodes=NUM_EVAL_EPISODES)
 
-gradient_based_trainer = GradientBasedTraining(
-    train_env=train_py_env, replay_buffer_manager=replay_buffer_manager,
-    replay_buffer_checkpointer=replay_buffer_checkpointer,
-    fitness_evaluator=fitness_evaluator, num_train_iteration=NUM_GRADIENT_BASED_TRAINING_EPOCH,
-    log_interval=LOG_INTERVAL, eval_interval=EVAL_INTERVAL, batch_size=BATCH_SIZE)
-
 replay_buffer_observer = replay_buffer_manager.get_observer()
 collect_driver_factory = PyDriverFactory(
     env=train_py_env, observers=[replay_buffer_observer])
+
+random_policy = random_py_policy.RandomPyPolicy(
+    time_step_spec=time_step_spec,
+    action_spec=action_spec
+)
+
+initial_collect_driver = collect_driver_factory.get_driver(
+    policy=random_policy, num_steps=INITIAL_COLLECT_STEPS)
+
+gradient_based_trainer = GradientBasedTraining(
+    train_env=train_py_env, replay_buffer_manager=replay_buffer_manager,
+    replay_buffer_checkpointer=replay_buffer_checkpointer,
+    initial_collect_driver=initial_collect_driver,
+    fitness_evaluator=fitness_evaluator, num_train_iteration=NUM_GRADIENT_BASED_TRAINING_EPOCH,
+    log_interval=LOG_INTERVAL, eval_interval=EVAL_INTERVAL, batch_size=BATCH_SIZE)
 
 
 population_based_training = PopulationBasedTraining(initial_population=initial_population,
