@@ -52,20 +52,25 @@ class PopulationBasedTraining:
             meta_agent = self.train_with_gradient_based_approach(
                 meta_agent, agent_checkpointer)
 
-            meta_agent.fitness = self.assess_fitness(agent=meta_agent)
+            meta_agent.fitness = self.assess_fitness(meta_agent=meta_agent)
 
             if self.best is None or (meta_agent.fitness >= self.best.fitness):
                 # ToDo: Do proper cloning
                 q_net = meta_agent.tf_agent._q_network.copy()
                 q_net.create_variables()
                 q_net.set_weights(meta_agent.tf_agent._q_network.get_weights())
-                learning_rate = meta_agent.tf_agent._optimizer._lr
+                learning_rate = meta_agent.tf_agent._optimizer.learning_rate.numpy()
                 optimizer = tf.keras.optimizers.Adam(
                     learning_rate=learning_rate)
                 training_step_counter = tf.Variable(
                     meta_agent.tf_agent.train_step_counter.numpy())
-                self.best = self.agent_factory.get_agent(
+                best_tf_agent = self.agent_factory.get_agent(
                     name="best", network=q_net, optimizer=optimizer, train_step_counter=training_step_counter)
+                best_meta_agent = MetaAgent(tf_agent=best_tf_agent)
+                best_meta_agent.fitness = meta_agent.fitness
+                best_meta_agent.previous_fitness = meta_agent.previous_fitness
+                best_meta_agent.tweak_probability = meta_agent.tweak_probability
+                self.best = best_meta_agent
 
         return self.best
 
