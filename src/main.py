@@ -1,5 +1,7 @@
 import os
 import tensorflow as tf
+from agent.meta_agent.meta_q_agent.meta_q_agent_copier import MetaQAgentCopier
+from network.cart_pole_q_network_factory import CartPoleQNetworkFactory
 from checkpoint_manager.agent_checkpoint_manager_factory import AgentCheckpointManagerFactory
 from summary_writer.summary_writer_manager import SummaryWriterManager
 from summary_writer.summay_writer_manager_factory import SummaryWriterManagerFactory
@@ -9,7 +11,7 @@ from fitness_evaluator.fitness_evaluator import FitnessEvaluator
 from checkpoint_manager.replay_buffer_checkpoint_manager import ReplayBufferCheckpointManager
 from replay_buffer.reverb_replay_buffer_manager import ReverbReplayBufferManager
 from training.gradient_based_training.gradient_based_training import GradientBasedTraining
-from agent.meta_agent.meta_agent import MetaAgent
+from agent.meta_agent.meta_q_agent.meta_q_agent import MetaQAgent
 from checkpoint_manager.agent_checkpoint_manager import AgentCheckpointManager
 from network.atari_q_network_factory import AtariQNetworkFactory
 from environment.cartpole_factory import CartPoleFactory
@@ -18,13 +20,12 @@ from tf_agents.environments import suite_atari, suite_gym, tf_py_environment, ba
 import logging
 from tf_agents.policies import random_tf_policy, random_py_policy, py_tf_eager_policy
 
-
+logging.basicConfig(level=logging.DEBUG)
 logger = logging.getLogger()
-logger.setLevel(logging.DEBUG)
 
 FC_LAYER_PARAMS = (512,)
 CONV_LAYER_PARAMS = None  # ((32, (8, 8), 4), (64, (4, 4), 2), (64, (3, 3), 1))
-INITIAL_LEARNING_RATE = 0.001
+INITIAL_LEARNING_RATE = 1e-3
 TARGET_UPDATE_PERIOD = 50
 REPLAY_BUFFER_MAX_LENGTH = 100000
 
@@ -35,9 +36,13 @@ EVAL_INTERVAL = 1000
 INITIAL_COLLECT_STEPS = 100
 
 POPSIZE = 5
-NUM_GRADIENT_BASED_TRAINING_EPOCH = 20000
+NUM_GRADIENT_BASED_TRAINING_EPOCH = 10000
 CHECKPOINT_BASE_DIR = os.path.join(os.path.dirname(__file__), "checkpoints")
 SUMMARY_BASE_DIR = os.path.join(os.path.dirname(__file__), "logs")
+
+BEST_POSSIBLE_FITNESS = 200
+MAX_COLLECT_STEPS = 10
+MAX_COLLECT_EPISODES = 1
 
 initial_population = []
 
@@ -52,9 +57,9 @@ action_spec = train_env.action_spec()
 time_step_spec = train_env.time_step_spec()
 
 
-network_factory = AtariQNetworkFactory(input_tensor_spec=train_env_observation_spec,
-                                       action_spec=action_spec, conv_layer_params=CONV_LAYER_PARAMS,
-                                       fc_layer_params=FC_LAYER_PARAMS)
+network_factory = CartPoleQNetworkFactory(input_tensor_spec=train_env_observation_spec,
+                                          action_spec=action_spec, conv_layer_params=CONV_LAYER_PARAMS,
+                                          fc_layer_params=FC_LAYER_PARAMS)
 
 agent_factory = DdqnAgentFactory(time_step_spec=time_step_spec,
                                  action_spec=action_spec, target_update_period=TARGET_UPDATE_PERIOD)
@@ -77,27 +82,27 @@ for i in range(POPSIZE):
     summary_writer_manager = summary_writer_manager_factory.get_summary_writer_manager(
         tf_agent=tf_agent)
 
-    meta_agent = MetaAgent(tf_agent=tf_agent, checkpoint_manager=agent_checkpoint_manager,
-                           summary_writer_manager=summary_writer_manager)
+    meta_agent = MetaQAgent(tf_agent=tf_agent, checkpoint_manager=agent_checkpoint_manager,
+                            summary_writer_manager=summary_writer_manager)
     initial_population.append(meta_agent)
 
+
+fitness_evaluator = FitnessEvaluator(
+    environment=eval_env, num_episodes=NUM_EVAL_EPISODES)
 
 collect_data_spec = tf_agent.collect_data_spec
 
 replay_buffer_manager = ReverbReplayBufferManager(
     data_spec=collect_data_spec, replay_buffer_capacity=REPLAY_BUFFER_MAX_LENGTH)
 
-
 replay_buffer_checkpoint_manager = ReplayBufferCheckpointManager(
     base_ckpt_dir=CHECKPOINT_BASE_DIR,
     replay_buffer=replay_buffer_manager.get_replay_buffer())
 
-fitness_evaluator = FitnessEvaluator(
-    environment=eval_env, num_episodes=NUM_EVAL_EPISODES)
-
 replay_buffer_observer = replay_buffer_manager.get_observer()
 collect_driver_factory = PyDriverFactory(
     env=train_py_env, observers=[replay_buffer_observer])
+
 
 random_policy = random_py_policy.RandomPyPolicy(
     time_step_spec=time_step_spec,
@@ -105,22 +110,29 @@ random_policy = random_py_policy.RandomPyPolicy(
 )
 
 initial_collect_driver = collect_driver_factory.get_driver(
-    policy=random_policy, num_steps=INITIAL_COLLECT_STEPS)
+    policy=random_policy, max_steps=INITIAL_COLLECT_STEPS)
 
 gradient_based_trainer = GradientBasedTraining(
     train_env=train_py_env, replay_buffer_manager=replay_buffer_manager,
     replay_buffer_checkpoint_manager=replay_buffer_checkpoint_manager,
     initial_collect_driver=initial_collect_driver,
     fitness_evaluator=fitness_evaluator, num_train_iteration=NUM_GRADIENT_BASED_TRAINING_EPOCH,
-    log_interval=LOG_INTERVAL, eval_interval=EVAL_INTERVAL, batch_size=BATCH_SIZE)
+    log_interval=LOG_INTERVAL, eval_interval=EVAL_INTERVAL,
+    collect_driver_factory=collect_driver_factory, max_collect_steps=MAX_COLLECT_STEPS,
+    max_collect_episodes=MAX_COLLECT_EPISODES,
+    batch_size=BATCH_SIZE,
+    best_possible_fitness=BEST_POSSIBLE_FITNESS)
 
+agent_copier = MetaQAgentCopier(
+    agent_factory=agent_factory, agent_ckpt_manager_factory=agent_checkpoint_manager_factory,
+    summary_writer_manager_factory=summary_writer_manager_factory,
+    max_collect_steps=MAX_COLLECT_STEPS, max_collect_episodes=MAX_COLLECT_EPISODES)
 
 population_based_training = PopulationBasedTraining(initial_population=initial_population,
                                                     gradient_based_trainer=gradient_based_trainer,
-                                                    agent_factory=agent_factory,
                                                     fitness_evaluator=fitness_evaluator,
-                                                    collect_driver_factory=collect_driver_factory,
-                                                    agent_ckpt_manager_factory=agent_checkpoint_manager_factory,
-                                                    summary_writer_manager_factory=summary_writer_manager_factory)
+                                                    agent_copier=agent_copier,
+                                                    best_possible_fitness=BEST_POSSIBLE_FITNESS
+                                                    )
 
 population_based_training.train()
