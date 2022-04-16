@@ -9,5 +9,5 @@ class DriverFactory(ABC):
         self.observers = observers
 
     @abstractmethod
-    def get_driver(self, policy, num_steps):
+    def get_driver(self, policy, max_steps: int):
         pass
