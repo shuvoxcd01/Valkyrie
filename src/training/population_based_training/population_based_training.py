@@ -4,6 +4,8 @@ import tensorflow as tf
 from pickletools import optimize
 from typing import List, Union
 from tf_agents.agents import TFAgent
+from summary_writer.summay_writer_manager_factory import SummaryWriterManagerFactory
+from checkpoint_manager.agent_checkpoint_manager_factory import AgentCheckpointManagerFactory
 from driver.driver_factory import DriverFactory
 from agent.meta_agent.meta_agent import MetaAgent
 from tf_agents.environments import TFEnvironment, PyEnvironment
@@ -19,23 +21,25 @@ from training.gradient_based_training.gradient_based_training import GradientBas
 
 class PopulationBasedTraining:
     def __init__(self, initial_population: List[MetaAgent],
-                 agent_ckpt_manager: AgentCheckpointManager,
                  gradient_based_trainer: GradientBasedTraining,
                  agent_factory: AgentFactory,
                  fitness_evaluator: FitnessEvaluator,
-                 collect_driver_factory: DriverFactory
+                 collect_driver_factory: DriverFactory,
+                 agent_ckpt_manager_factory: AgentCheckpointManagerFactory,
+                 summary_writer_manager_factory: SummaryWriterManagerFactory
                  ) -> None:
 
         self.population = initial_population
         self.num_individuals = len(self.population)
         self.best = None
 
-        self.agent_ckpt_manager = agent_ckpt_manager
-
         self.gradient_based_trainer = gradient_based_trainer
         self.agent_factory = agent_factory
         self.fitness_evaluator = fitness_evaluator
         self.collect_driver_factory = collect_driver_factory
+
+        self.agent_ckpt_manager_factor = agent_ckpt_manager_factory
+        self.summary_writer_manager_factory = summary_writer_manager_factory
 
     def assess_fitness(self, meta_agent: MetaAgent) -> float:
         policy = meta_agent.tf_agent.policy
@@ -45,12 +49,9 @@ class PopulationBasedTraining:
 
     def train(self):
         for meta_agent in self.population:
-            agent_checkpointer = self.agent_ckpt_manager.create_or_initialize_checkpointer(
-                meta_agent.tf_agent)
             meta_agent.previous_fitness = meta_agent.fitness
 
-            meta_agent = self.train_with_gradient_based_approach(
-                meta_agent, agent_checkpointer)
+            self.train_with_gradient_based_approach(meta_agent)
 
             meta_agent.fitness = self.assess_fitness(meta_agent=meta_agent)
 
@@ -66,7 +67,14 @@ class PopulationBasedTraining:
                     meta_agent.tf_agent.train_step_counter.numpy())
                 best_tf_agent = self.agent_factory.get_agent(
                     name="best", network=q_net, optimizer=optimizer, train_step_counter=training_step_counter)
-                best_meta_agent = MetaAgent(tf_agent=best_tf_agent)
+
+                agent_checkpoint_manager = self.agent_ckpt_manager_factor.get_agent_checkpoint_manager(
+                    agent=best_tf_agent)
+                summary_writer_manager = self.summary_writer_manager_factory.get_summary_writer_manager(
+                    tf_agent=best_tf_agent)
+
+                best_meta_agent = MetaAgent(
+                    tf_agent=best_tf_agent, checkpoint_manager=agent_checkpoint_manager, summary_writer_manager=summary_writer_manager)
                 best_meta_agent.fitness = meta_agent.fitness
                 best_meta_agent.previous_fitness = meta_agent.previous_fitness
                 best_meta_agent.tweak_probability = meta_agent.tweak_probability
@@ -74,14 +82,12 @@ class PopulationBasedTraining:
 
         return self.best
 
-    def train_with_gradient_based_approach(self, meta_agent: MetaAgent, agent_checkpointer):
+    def train_with_gradient_based_approach(self, meta_agent: MetaAgent):
         collect_policy = py_tf_eager_policy.PyTFEagerPolicy(
             meta_agent.tf_agent.collect_policy, use_tf_function=True)
         # ToDo: change num_steps
         collect_driver = self.collect_driver_factory.get_driver(
             policy=collect_policy, num_steps=1)
 
-        meta_agent.tf_agent = self.gradient_based_trainer.train_agent(
-            agent=meta_agent.tf_agent, agent_checkpointer=agent_checkpointer, collect_driver=collect_driver)
-
-        return meta_agent
+        self.gradient_based_trainer.train_agent(
+            meta_agent=meta_agent, collect_driver=collect_driver)

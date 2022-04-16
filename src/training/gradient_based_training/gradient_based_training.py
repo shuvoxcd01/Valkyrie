@@ -8,6 +8,7 @@ from typing import Union
 import tensorflow as tf
 from tf_agents.environments import TFEnvironment, PyEnvironment
 from tf_agents.policies import py_policy, tf_policy, py_tf_eager_policy
+from agent.meta_agent.meta_agent import MetaAgent
 from checkpoint_manager.replay_buffer_checkpoint_manager import ReplayBufferCheckpointManager
 from fitness_evaluator.fitness_evaluator import FitnessEvaluator
 from replay_buffer.replay_buffer_manager import ReplayBufferManager
@@ -19,7 +20,7 @@ import logging
 class GradientBasedTraining:
     def __init__(self, train_env: Union[TFEnvironment, PyEnvironment],
                  replay_buffer_manager: ReplayBufferManager,
-                 replay_buffer_checkpointer: Checkpointer,
+                 replay_buffer_checkpoint_manager: ReplayBufferCheckpointManager,
                  initial_collect_driver: Driver,
                  fitness_evaluator: FitnessEvaluator,
                  num_train_iteration: int, log_interval: int, eval_interval: int,
@@ -28,7 +29,7 @@ class GradientBasedTraining:
         self.train_env = train_env
         self.replay_buffer_manager = replay_buffer_manager
         self.logger = logging.getLogger()
-        self.replay_buffer_checkpointer = replay_buffer_checkpointer
+        self.replay_buffer_checkpoint_manager = replay_buffer_checkpoint_manager
         self.fitness_evaluator = fitness_evaluator
         self.num_train_iteration = num_train_iteration
         self.eval_interval = eval_interval
@@ -41,24 +42,16 @@ class GradientBasedTraining:
     def _initialize(self):
         self.initial_collect_driver.run(self.train_env.reset())
 
-    # def _get_summary_writer(self):
-    #     summary_writer_dir = os.path.join(self.base_summary_writer_dir, agent.name)
-    #     summary_writer = tf.summary.create_file_writer(summary_writer_dir)
-
-    #     return summary_writer
-
     def _compute_avg_return(self, policy):
         avg_return = self.fitness_evaluator.evaluate_fitness(policy)
 
         return avg_return
 
-    def train_agent(self, agent: TFAgent, agent_checkpointer, collect_driver: Driver,
-                    summary_writer=None):
-        agent.train = common.function(agent.train)
+    def train_agent(self, meta_agent: MetaAgent, collect_driver: Driver):
+        tf_agent = meta_agent.tf_agent
+        tf_agent.train = common.function(tf_agent.train)
 
-        agent.train_step_counter.assign(0)
-
-        avg_return = self._compute_avg_return(agent.policy)
+        avg_return = self._compute_avg_return(tf_agent.policy)
         returns = [avg_return]
 
         iterator = self.replay_buffer_manager.get_dataset_iterator(
@@ -68,30 +61,25 @@ class GradientBasedTraining:
             collect_driver.run(self.train_env.reset())
 
             experience, unused_info = next(iterator)
-            train_loss = agent.train(experience).loss
+            train_loss = tf_agent.train(experience).loss
 
-            step = agent.train_step_counter.numpy()
+            step = tf_agent.train_step_counter.numpy()
 
             if step % self.log_interval == 0:
                 self.logger.info(
                     'step = {0}: loss = {1}'.format(step, train_loss))
 
             if step % self.eval_interval == 0:
-                avg_return = self._compute_avg_return(agent.policy)
+                avg_return = self._compute_avg_return(tf_agent.policy)
                 self.logger.info('step = {0}: Average Return = {1}'.format(
                     step, avg_return))
-                # with summary_writer.as_default():
-                #     tf.summary.scalar("Average return", avg_return, step=step)
-                #     summary_writer.flush()
+
+                meta_agent.summary_writer_manager.write_scalar_summary(
+                    name="Average return", data=avg_return)
                 returns.append(avg_return)
 
-                agent_checkpointer.save(global_step=step)
+                meta_agent.checkpoint_manager.save_checkpointer()
 
-        # Save the policy at the end of training so that it can be easily deployed.
-        # tf_policy_saver.save(policy_dir)
-        agent_checkpointer.save(agent.train_step_counter.numpy())
+        meta_agent.checkpoint_manager.save_checkpointer()
 
-        global_step = tf.compat.v1.train.get_global_step()
-        self.replay_buffer_checkpointer.save(global_step=global_step)
-
-        return agent
+        self.replay_buffer_checkpoint_manager.save_checkpointer()
