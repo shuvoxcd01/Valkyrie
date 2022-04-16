@@ -1,4 +1,4 @@
-from tabnanny import check
+from tf_agents.drivers.driver import Driver
 from tf_agents.agents import TFAgent
 from summary_writer.summary_writer_manager import SummaryWriterManager
 from checkpoint_manager.agent_checkpoint_manager import AgentCheckpointManager
@@ -14,3 +14,7 @@ class MetaAgent:
         self.previous_fitness = previous_fitness
         self.fitness = fitness
         self.tweak_probability = tweak_probability
+
+    def update_fitness(self, value):
+        self.previous_fitness = self.fitness
+        self.fitness = value
