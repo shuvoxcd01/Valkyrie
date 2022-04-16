@@ -13,15 +13,19 @@ class CheckpointManager(ABC):
         self.logger = logging.getLogger()
 
     @abstractmethod
-    def create_or_initialize_checkpointer(self, arg:Union[TFAgent,ReplayBuffer])->common.Checkpointer:
+    def create_or_initialize_checkpointer(self)->common.Checkpointer:
         pass
 
     @abstractmethod
-    def delete_checkpointer(self, arg:Optional[TFAgent]=None)->None:
+    def delete_checkpointer(self)->None:
         pass
 
     def restore_checkpointer(self, checkpointer: common.Checkpointer):
         return checkpointer.initialize_or_restore()
+
+    @abstractmethod
+    def save_checkpointer(self):
+        pass
 
 
 
