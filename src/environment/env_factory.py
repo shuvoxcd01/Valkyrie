@@ -1,4 +1,5 @@
 from abc import ABC, abstractmethod
+from tf_agents.environments import suite_atari, suite_gym, tf_py_environment, batched_py_environment, parallel_py_environment
 
 
 class EnvFactory(ABC):
@@ -7,6 +8,7 @@ class EnvFactory(ABC):
     def get_py_env(self):
         pass
 
-    @abstractmethod
     def get_tf_env(self):
-        pass
+        tf_env = tf_py_environment.TFPyEnvironment(self.get_py_env())
+
+        return tf_env

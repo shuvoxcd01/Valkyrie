@@ -15,7 +15,9 @@ class AtariQNetworkFactory(NetworkFactory):
     def get_network(self):
         q_net = q_network.QNetwork(
             input_tensor_spec=self.input_tensor_spec,
-            action_spec=self.action_spec
+            action_spec=self.action_spec,
+            conv_layer_params=self.conv_layer_params,
+            fc_layer_params=self.fc_layer_params
         )
 
         return q_net

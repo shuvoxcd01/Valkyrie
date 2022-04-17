@@ -9,10 +9,10 @@ class DynamicStepDriverFactory(DriverFactory):
     def __init__(self, env: TFEnvironment, observers: List) -> None:
         super().__init__(env=env, observers=observers)
 
-    def get_driver(self, policy: tf_policy.TFPolicy, num_steps: int):
+    def get_driver(self, policy: tf_policy.TFPolicy, max_steps: int):
         return dynamic_step_driver.DynamicStepDriver(
             env=self.env,
             policy=policy,
             observers=self.observers,
-            num_steps=num_steps
+            num_steps=max_steps
         )

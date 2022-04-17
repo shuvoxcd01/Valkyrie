@@ -130,5 +130,8 @@ dmypy.json
 
 test_*
 logs/*
+src/logs/*
 checkpoint/*
 src/checkpoint/*
+checkpoints/*
+src/checkpoints/*
