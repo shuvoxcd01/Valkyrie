@@ -1,3 +1,4 @@
+import logging
 from tf_agents.drivers.driver import Driver
 from tf_agents.agents import TFAgent
 from agent.meta_agent.meta_agent import MetaAgent
@@ -16,9 +17,12 @@ class MetaQAgent(MetaAgent):
                          fitness=fitness, previous_fitness=previous_fitness,
                          tweak_probability=tweak_probability, beta=beta,
                          generation=generation)
+        self.logger = logging.getLogger()
 
     def mutate(self):
         d = tfp.distributions.Normal(loc=0., scale=0.1)
+
+        old_weights = self.tf_agent._q_network.get_weights()
 
         for layer in self.tf_agent._q_network.layers:
             if layer.trainable:
@@ -29,3 +33,7 @@ class MetaQAgent(MetaAgent):
                     new_weights = weights + noise
                     new_weights_list.append(new_weights)
                 layer.set_weights(new_weights_list)
+        
+        self.logger.debug(f"{self.name}: Mutation performed.")
+        self.logger.debug(f"Old weights: {old_weights}")
+        self.logger.debug(f"New weights: {self.tf_agent._q_network.get_weights()}")

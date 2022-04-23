@@ -52,7 +52,7 @@ class PopulationBasedTraining:
         return tweak_prob
 
     def train(self):
-        for _ in range(100):
+        for _ in range(20):
             for meta_agent in self.population:
                 meta_agent.previous_fitness = meta_agent.fitness
 
@@ -81,6 +81,8 @@ class PopulationBasedTraining:
                 beta = 0
                 if meta_agent.fitness <= self.best.fitness/2.0:
                     beta = 0.5
+
+                meta_agent.mutate()
 
                 child = self.agent_copier.crossover(agent_1=meta_agent, agent_2=self.best,
                                                     agent_1_keep_precentage=beta, fitness_evaluator=self.fitness_evaluator)
