@@ -1,3 +1,4 @@
+import logging
 from agent.meta_agent.meta_agent import MetaAgent
 from fitness_evaluator.fitness_evaluator import FitnessEvaluator
 from agent.meta_agent.meta_agent_copier import MetaAgentCopier
@@ -22,6 +23,7 @@ class MetaQAgentCopier(MetaAgentCopier):
         self.summary_writer_manager_factory = summary_writer_manager_factory
         self.max_collect_steps = max_collect_steps
         self.max_collect_episodes = max_collect_episodes
+        self.logger = logging.getLogger()
 
     def copy_agent(self, meta_agent: MetaQAgent, name: str):
         q_net = meta_agent.tf_agent._q_network.copy()
@@ -46,15 +48,12 @@ class MetaQAgentCopier(MetaAgentCopier):
 
         fitness = meta_agent.fitness
         previous_fitness = meta_agent.previous_fitness
-        tweak_probability = meta_agent.tweak_probability
-        beta = meta_agent.beta
         generation = meta_agent.generation
 
         copied_meta_agent = MetaQAgent(
             tf_agent=copied_tf_agent, checkpoint_manager=agent_checkpoint_manager,
             summary_writer_manager=summary_writer_manager,
             fitness=fitness, previous_fitness=previous_fitness,
-            tweak_probability=tweak_probability, beta=beta,
             generation=generation)
 
         copied_meta_agent.checkpoint_manager.save_checkpointer()
@@ -68,7 +67,7 @@ class MetaQAgentCopier(MetaAgentCopier):
 
         generation = agent_1.generation + 1
         name = agent_1.tf_agent.name.split(
-            "generation")[0] + "generation" + str(generation)
+            "_generation_")[0] + "_generation_" + str(generation)
 
         q_net = agent_1.tf_agent._q_network.copy()
 
@@ -117,8 +116,10 @@ class MetaQAgentCopier(MetaAgentCopier):
             summary_writer_manager=summary_writer_manager,
             generation=generation)
 
-        child_meta_agent.update_fitness(fitness_evaluator.evaluate_fitness(
-            policy=child_meta_agent.tf_agent.policy))
+        child_meta_agent_fitness = fitness_evaluator.evaluate_fitness(
+            policy=child_meta_agent.tf_agent.policy)
+
+        child_meta_agent.update_fitness(child_meta_agent_fitness)
 
         child_meta_agent.checkpoint_manager.save_checkpointer()
 
