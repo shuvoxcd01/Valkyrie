@@ -49,7 +49,9 @@ class GradientBasedTraining:
         self._initialize()
 
     def _initialize(self):
+        self.logger.debug("Running initial collect driver.")
         self.initial_collect_driver.run(self.train_env.reset())
+        self.logger.debug("Initial collect driver finished running.")
 
     def _get_collect_driver(self, tf_agent: TFAgent):
         collect_policy = py_tf_eager_policy.PyTFEagerPolicy(
