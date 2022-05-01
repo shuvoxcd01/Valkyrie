@@ -135,3 +135,5 @@ checkpoint/*
 src/checkpoint/*
 checkpoints/*
 src/checkpoints/*
+training_metadata_*
+old_training_metadata/*
