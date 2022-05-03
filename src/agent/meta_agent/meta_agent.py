@@ -26,5 +26,5 @@ class MetaAgent(ABC):
         self.fitness = value
 
     @abstractmethod
-    def mutate(self):
+    def mutate(self, mean: float, variance: float):
         pass
