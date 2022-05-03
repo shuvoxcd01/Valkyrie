@@ -16,9 +16,9 @@ class SummaryWriterManager:
 
         return summary_writer
 
-    def write_scalar_summary(self, name, data):
+    def write_scalar_summary(self, name, data, step=None):
         with self.summary_writer.as_default():
-            agent_step = self.agent.train_step_counter.numpy()
+            agent_step = self.agent.train_step_counter.numpy() if step is None else step
             tf.summary.scalar(name=name, data=data, step=agent_step)
             self.summary_writer.flush()
 

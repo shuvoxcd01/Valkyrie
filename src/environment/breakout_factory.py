@@ -4,11 +4,11 @@ from environment.env_factory import EnvFactory
 from tf_agents.environments import suite_atari, suite_gym, tf_py_environment, batched_py_environment, parallel_py_environment
 
 
-class PongFactory(EnvFactory):
+class BreakoutFactory(EnvFactory):
     def __init__(self) -> None:
         super().__init__()
         self.env_name = suite_atari.game(
-            name='Pong', mode='Deterministic', version='v4')
+            name='Breakout', mode='Deterministic', version='v0')
         self.atari_frame_skip = 4
         self.max_episode_frames = 108000
 
