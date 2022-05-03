@@ -33,12 +33,19 @@ class PopulationBasedTraining:
                  fitness_trakcer: FitnessTracker,
                  parent_tracker: ParentTracker,
                  agent_copier: MetaAgentCopier,
+                 num_individuals: Optional[int] = None,
                  best_possible_fitness: Optional[int] = None,
-                 num_training_iterations=100
+                 num_training_iterations: int = 100,
+                 generated_agent_prefix: str = "g_",
+                 generated_agent_count: int = 0,
+                 mutation_mean=0.0,
+                 mutation_variance=0.0001
                  ) -> None:
 
         self.population = initial_population
-        self.num_individuals = len(self.population)
+        self.num_individuals = len(
+            self.population) if num_individuals is None else num_individuals
+
         self.best = None
 
         self.gradient_based_trainer = gradient_based_trainer
@@ -50,8 +57,10 @@ class PopulationBasedTraining:
         self.num_training_iterations = num_training_iterations
         self.fitness_tracker = fitness_trakcer
         self.parent_tracker = parent_tracker
-        self.generated_agent_prefix = "g_"
-        self.generated_agent_count = 0
+        self.generated_agent_prefix = generated_agent_prefix
+        self.generated_agent_count = generated_agent_count
+        self.mutation_mean = mutation_mean
+        self.mutation_variance = mutation_variance
 
     def assess_fitness(self, meta_agent: MetaAgent) -> float:
         policy = meta_agent.tf_agent.policy
@@ -67,6 +76,10 @@ class PopulationBasedTraining:
         return tweak_prob
 
     def train(self):
+        for meta_agent in self.population:
+            fitness = self.assess_fitness(meta_agent=meta_agent)
+            meta_agent.update_fitness(fitness)
+
         for iteration in range(self.num_training_iterations):
             for meta_agent in self.population:
                 meta_agent.generation += 1
@@ -133,7 +146,8 @@ class PopulationBasedTraining:
                     self.logger.debug(
                         f"Agent fitness before mutation: {meta_agent.fitness}")
 
-                    meta_agent.mutate()
+                    meta_agent.mutate(mean=self.mutation_mean,
+                                      variance=self.mutation_variance)
 
                     fitness_after_mutation = self.assess_fitness(
                         meta_agent=meta_agent)
