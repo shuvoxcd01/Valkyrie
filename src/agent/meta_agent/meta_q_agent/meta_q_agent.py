@@ -11,18 +11,18 @@ class MetaQAgent(MetaAgent):
     def __init__(self, tf_agent: TFAgent, checkpoint_manager: AgentCheckpointManager,
                  summary_writer_manager: SummaryWriterManager,
                  fitness=0, previous_fitness=0,
-                 tweak_probability=0, beta=0, generation: int = 0) -> None:
+                 generation: int = 0, name=None) -> None:
         super().__init__(tf_agent=tf_agent, checkpoint_manager=checkpoint_manager,
                          summary_writer_manager=summary_writer_manager,
                          fitness=fitness, previous_fitness=previous_fitness,
-                         tweak_probability=tweak_probability, beta=beta,
-                         generation=generation)
+                         generation=generation, name=name)
         self.logger = logging.getLogger()
 
     def mutate(self):
-        d = tfp.distributions.Normal(loc=0., scale=0.1)
+        # self.logger.debug(f"Performing mutation: {self.tf_agent.name}")
+        d = tfp.distributions.Normal(loc=0., scale=0.0001)
 
-        old_weights = self.tf_agent._q_network.get_weights()
+        # old_weights = self.tf_agent._q_network.get_weights()
 
         for layer in self.tf_agent._q_network.layers:
             if layer.trainable:
@@ -33,7 +33,7 @@ class MetaQAgent(MetaAgent):
                     new_weights = weights + noise
                     new_weights_list.append(new_weights)
                 layer.set_weights(new_weights_list)
-        
-        self.logger.debug(f"{self.name}: Mutation performed.")
-        self.logger.debug(f"Old weights: {old_weights}")
-        self.logger.debug(f"New weights: {self.tf_agent._q_network.get_weights()}")
+
+        # self.logger.debug(f"{self.name}: Mutation performed.")
+        # self.logger.debug(f"Old weights: {old_weights}")
+        # self.logger.debug(f"New weights: {self.tf_agent._q_network.get_weights()}")

@@ -16,7 +16,10 @@ class MetaAgent(ABC):
         self.previous_fitness = previous_fitness
         self.fitness = fitness
         self.generation = generation
-        self.name = self.tf_agent.name if name is None else name
+        self.name = self.extract_name_from_tf_agent() if name is None else name
+
+    def extract_name_from_tf_agent(self):
+        return self.tf_agent.name.split("_generation_")[0]
 
     def update_fitness(self, value):
         self.previous_fitness = self.fitness
