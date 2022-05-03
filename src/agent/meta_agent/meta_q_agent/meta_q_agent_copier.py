@@ -1,4 +1,5 @@
 import logging
+from typing import Optional
 from agent.meta_agent.meta_agent import MetaAgent
 from fitness_evaluator.fitness_evaluator import FitnessEvaluator
 from agent.meta_agent.meta_agent_copier import MetaAgentCopier
@@ -25,7 +26,7 @@ class MetaQAgentCopier(MetaAgentCopier):
         self.max_collect_episodes = max_collect_episodes
         self.logger = logging.getLogger()
 
-    def copy_agent(self, meta_agent: MetaQAgent, name: str):
+    def copy_agent(self, meta_agent: MetaQAgent, name: str, agent_generation: Optional[int] = None):
         q_net = meta_agent.tf_agent._q_network.copy()
 
         if isinstance(q_net, Network) and not isinstance(q_net, Sequential):
@@ -48,7 +49,7 @@ class MetaQAgentCopier(MetaAgentCopier):
 
         fitness = meta_agent.fitness
         previous_fitness = meta_agent.previous_fitness
-        generation = meta_agent.generation
+        generation = agent_generation if agent_generation is not None else meta_agent.generation
 
         copied_meta_agent = MetaQAgent(
             tf_agent=copied_tf_agent, checkpoint_manager=agent_checkpoint_manager,
@@ -65,9 +66,8 @@ class MetaQAgentCopier(MetaAgentCopier):
         assert type(agent_1) == type(
             agent_2), "Types of crossover partners don't match."
 
-        generation = agent_1.generation + 1
-        name = agent_1.tf_agent.name.split(
-            "_generation_")[0] + "_generation_" + str(generation)
+        generation = agent_1.generation
+        name = agent_1.name + "_generation_" + str(generation)
 
         q_net = agent_1.tf_agent._q_network.copy()
 
