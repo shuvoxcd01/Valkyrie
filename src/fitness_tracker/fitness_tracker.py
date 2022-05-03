@@ -23,7 +23,7 @@ class FitnessTracker:
                     ["base_agent_name", "agent_generation", "operation_name", "fitness_value"])
 
     def write(self, agent: MetaAgent, operation_name: str, fitness_value: float):
-        base_agent_name = agent.tf_agent.name.split("_generation_")[0]
+        base_agent_name = agent.name
         agent_generation = agent.generation
 
         with open(self.csv_file_path, mode="a", newline="") as csvfile:
@@ -53,7 +53,7 @@ class FitnessTracker:
                 op_name = row.operation_name
                 if op_name == "None":
                     continue
-                label = str(generation)+"_" + op_name
+                label = agent_name + "_" + str(generation)+"_" + op_name
                 x_data.append(label)
                 y_data.append(row.fitness_value)
 
