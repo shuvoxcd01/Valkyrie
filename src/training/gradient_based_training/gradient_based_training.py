@@ -42,7 +42,7 @@ class GradientBasedTraining:
         self.batch_size = batch_size
         self.initial_collect_driver = initial_collect_driver
         self.best_possible_fitness = best_possible_fitness
-        self.collect_driver_factor = collect_driver_factory
+        self.collect_driver_factory = collect_driver_factory
         self.max_collect_steps = max_collect_steps
         self.max_collect_episodes = max_collect_episodes
 
@@ -57,7 +57,7 @@ class GradientBasedTraining:
         collect_policy = py_tf_eager_policy.PyTFEagerPolicy(
             tf_agent.collect_policy, use_tf_function=True)
 
-        collect_driver = self.collect_driver_factor.get_driver(
+        collect_driver = self.collect_driver_factory.get_driver(
             policy=collect_policy, max_steps=self.max_collect_steps, max_episodes=self.max_collect_episodes)
 
         return collect_driver
@@ -71,8 +71,10 @@ class GradientBasedTraining:
         iterator = self.replay_buffer_manager.get_dataset_iterator(
             num_parallel_calls=3, batch_size=self.batch_size, num_steps=2, num_prefetch=3)
 
+        time_step = self.train_env.reset()
+
         for _ in range(self.num_train_iteration):
-            collect_driver.run(self.train_env.reset())
+            time_step, _ = collect_driver.run(time_step)
 
             experience, unused_info = next(iterator)
             train_loss = tf_agent.train(experience).loss
