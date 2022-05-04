@@ -1,0 +1,508 @@
+Checkpoint directory created.
+No checkpoint available at /home/usr/Valkyrie/Valkyrie/training_metadata_pong_v4_2022-05-03 11:16:54.011767/checkpoints/agent_0
+Checkpoint directory created.
+No checkpoint available at /home/usr/Valkyrie/Valkyrie/training_metadata_pong_v4_2022-05-03 11:16:54.011767/checkpoints/agent_1
+Checkpoint directory created.
+No checkpoint available at /home/usr/Valkyrie/Valkyrie/training_metadata_pong_v4_2022-05-03 11:16:54.011767/checkpoints/replay_buffer
+Running initial collect driver.
+Initial collect driver finished running.
+From /usr/local/lib/python3.8/dist-packages/tensorflow/python/util/dispatch.py:1096: calling foldr_v2 (from tensorflow.python.ops.functional_ops) with back_prop=False is deprecated and will be removed in a future version.
+Instructions for updating:
+back_prop=False is deprecated. Consider using tf.stop_gradient instead.
+Instead of:
+results = tf.foldr(fn, elems, back_prop=False)
+Use:
+results = tf.nest.map_structure(tf.stop_gradient, tf.foldr(fn, elems))
+step = 1000: loss = 0.07191789150238037
+step = 2000: loss = 0.1160503700375557
+step = 3000: loss = 0.0004608660819940269
+step = 4000: loss = 0.0013195754727348685
+step = 5000: loss = 0.02741246111690998
+step = 6000: loss = 0.01261804811656475
+step = 7000: loss = 0.005383315496146679
+step = 8000: loss = 0.01233508251607418
+step = 9000: loss = 0.007436032872647047
+step = 10000: loss = 0.017331184819340706
+step = 10000: Average Return = -21.0
+Saved checkpoint: /home/usr/Valkyrie/Valkyrie/training_metadata_pong_v4_2022-05-03 11:16:54.011767/checkpoints/agent_0/ckpt-10000
+step = 11000: loss = 0.014789317734539509
+step = 12000: loss = 0.017106998711824417
+step = 13000: loss = 0.015418147668242455
+step = 14000: loss = 0.011536598205566406
+step = 15000: loss = 0.012373242527246475
+step = 16000: loss = 0.008901096880435944
+step = 17000: loss = 0.009374747984111309
+step = 18000: loss = 0.009715519845485687
+step = 19000: loss = 0.014450677670538425
+step = 20000: loss = 0.005570372566580772
+step = 20000: Average Return = -16.0
+Saved checkpoint: /home/usr/Valkyrie/Valkyrie/training_metadata_pong_v4_2022-05-03 11:16:54.011767/checkpoints/agent_0/ckpt-20000
+step = 21000: loss = 0.01131028588861227
+step = 22000: loss = 0.02066654898226261
+step = 23000: loss = 0.019441157579421997
+step = 24000: loss = 0.016290001571178436
+step = 25000: loss = 0.021906934678554535
+step = 26000: loss = 0.05231228843331337
+step = 27000: loss = 0.02271321415901184
+step = 28000: loss = 0.013647283427417278
+step = 29000: loss = 0.02129293978214264
+step = 30000: loss = 0.03948977589607239
+step = 30000: Average Return = -2.0
+Saved checkpoint: /home/usr/Valkyrie/Valkyrie/training_metadata_pong_v4_2022-05-03 11:16:54.011767/checkpoints/agent_0/ckpt-30000
+Saved checkpoint: /home/usr/Valkyrie/Valkyrie/training_metadata_pong_v4_2022-05-03 11:16:54.011767/checkpoints/agent_0/ckpt-30000
+Saved checkpoint: /home/usr/Valkyrie/Valkyrie/training_metadata_pong_v4_2022-05-03 11:16:54.011767/checkpoints/replay_buffer/ckpt-1
+Checkpoint directory created.
+No checkpoint available at /home/usr/Valkyrie/Valkyrie/training_metadata_pong_v4_2022-05-03 11:16:54.011767/checkpoints/best
+Saved checkpoint: /home/usr/Valkyrie/Valkyrie/training_metadata_pong_v4_2022-05-03 11:16:54.011767/checkpoints/best/ckpt-30000
+step = 1000: loss = 0.04505279287695885
+step = 2000: loss = 0.031375009566545486
+step = 3000: loss = 0.030660774558782578
+step = 4000: loss = 0.030485849827528
+step = 5000: loss = 0.009648305363953114
+step = 6000: loss = 0.024510115385055542
+step = 7000: loss = 0.0061421748250722885
+step = 8000: loss = 0.030792128294706345
+step = 9000: loss = 0.008401142433285713
+step = 10000: loss = 0.004343043547123671
+step = 10000: Average Return = -18.0
+Saved checkpoint: /home/usr/Valkyrie/Valkyrie/training_metadata_pong_v4_2022-05-03 11:16:54.011767/checkpoints/agent_1/ckpt-10000
+step = 11000: loss = 0.006353764794766903
+step = 12000: loss = 0.011525191366672516
+step = 13000: loss = 0.019841399043798447
+step = 14000: loss = 0.008828817866742611
+step = 15000: loss = 0.01071278564631939
+step = 16000: loss = 0.015990983694791794
+step = 17000: loss = 0.015827514231204987
+step = 18000: loss = 0.011726821772754192
+step = 19000: loss = 0.014940496534109116
+step = 20000: loss = 0.00857207179069519
+step = 20000: Average Return = -17.0
+Saved checkpoint: /home/usr/Valkyrie/Valkyrie/training_metadata_pong_v4_2022-05-03 11:16:54.011767/checkpoints/agent_1/ckpt-20000
+step = 21000: loss = 0.016841892153024673
+step = 22000: loss = 0.014246196486055851
+step = 23000: loss = 0.02410271018743515
+step = 24000: loss = 0.015595593489706516
+step = 25000: loss = 0.02580258622765541
+step = 26000: loss = 0.010680995881557465
+step = 27000: loss = 0.020966805517673492
+step = 28000: loss = 0.016324639320373535
+step = 29000: loss = 0.020586062222719193
+step = 30000: loss = 0.054525166749954224
+step = 30000: Average Return = -15.0
+Saved checkpoint: /home/usr/Valkyrie/Valkyrie/training_metadata_pong_v4_2022-05-03 11:16:54.011767/checkpoints/agent_1/ckpt-30000
+Saved checkpoint: /home/usr/Valkyrie/Valkyrie/training_metadata_pong_v4_2022-05-03 11:16:54.011767/checkpoints/agent_1/ckpt-30000
+Saved checkpoint: /home/usr/Valkyrie/Valkyrie/training_metadata_pong_v4_2022-05-03 11:16:54.011767/checkpoints/replay_buffer/ckpt-2
+Checkpoint directory created.
+No checkpoint available at /home/usr/Valkyrie/Valkyrie/training_metadata_pong_v4_2022-05-03 11:16:54.011767/checkpoints/g_0
+Saved checkpoint: /home/usr/Valkyrie/Valkyrie/training_metadata_pong_v4_2022-05-03 11:16:54.011767/checkpoints/g_0/ckpt-30000
+Agent: g_0
+Starting mutation.
+Agent fitness before mutation: -2.0
+Mutation Finished.
+Agent fitness after mutation: -2.0
+Skipping crossover.
+Checkpoint directory created.
+No checkpoint available at /home/usr/Valkyrie/Valkyrie/training_metadata_pong_v4_2022-05-03 11:16:54.011767/checkpoints/g_1
+Saved checkpoint: /home/usr/Valkyrie/Valkyrie/training_metadata_pong_v4_2022-05-03 11:16:54.011767/checkpoints/g_1/ckpt-30000
+Agent: g_1
+Skipping mutation.
+Performing crossover.
+Parent 1: g_1
+Parent 1 fitness: -15.0
+Parent 2 best
+Parent 2 fitness: -2.0
+Parent 1 keep percentage: 0.5
+Checkpoint directory already exists.
+Checkpoint available: /home/usr/Valkyrie/Valkyrie/training_metadata_pong_v4_2022-05-03 11:16:54.011767/checkpoints/g_1/ckpt-30000
+Saved checkpoint: /home/usr/Valkyrie/Valkyrie/training_metadata_pong_v4_2022-05-03 11:16:54.011767/checkpoints/g_1/ckpt-30000
+Crossover done.
+Child fitness: -15.0
+step = 31000: loss = 0.02451586164534092
+step = 32000: loss = 0.0353134460747242
+step = 33000: loss = 0.011551504954695702
+step = 34000: loss = 0.008568224497139454
+step = 35000: loss = 0.011430547572672367
+step = 36000: loss = 0.010587556287646294
+step = 37000: loss = 0.01398538053035736
+step = 38000: loss = 0.005987702868878841
+step = 39000: loss = 0.015103451907634735
+step = 40000: loss = 0.005845915991812944
+step = 40000: Average Return = 8.0
+Saved checkpoint: /home/usr/Valkyrie/Valkyrie/training_metadata_pong_v4_2022-05-03 11:16:54.011767/checkpoints/agent_0/ckpt-40000
+step = 41000: loss = 0.010464480146765709
+step = 42000: loss = 0.02594674564898014
+step = 43000: loss = 0.01068283710628748
+step = 44000: loss = 0.016437038779258728
+step = 45000: loss = 0.009083730168640614
+step = 46000: loss = 0.006069705821573734
+step = 47000: loss = 0.015936631709337234
+step = 48000: loss = 0.014373354613780975
+step = 49000: loss = 0.01332615315914154
+step = 50000: loss = 0.007988258264958858
+step = 50000: Average Return = 12.0
+Saved checkpoint: /home/usr/Valkyrie/Valkyrie/training_metadata_pong_v4_2022-05-03 11:16:54.011767/checkpoints/agent_0/ckpt-50000
+step = 51000: loss = 0.02168668434023857
+step = 52000: loss = 0.015822436660528183
+step = 53000: loss = 0.012288426049053669
+step = 54000: loss = 0.006723169237375259
+step = 55000: loss = 0.006697280332446098
+step = 56000: loss = 0.01998554915189743
+step = 57000: loss = 0.011484464630484581
+step = 58000: loss = 0.017016805708408356
+step = 59000: loss = 0.015306578017771244
+step = 60000: loss = 0.010365767404437065
+step = 60000: Average Return = 11.0
+Saved checkpoint: /home/usr/Valkyrie/Valkyrie/training_metadata_pong_v4_2022-05-03 11:16:54.011767/checkpoints/agent_0/ckpt-60000
+Saved checkpoint: /home/usr/Valkyrie/Valkyrie/training_metadata_pong_v4_2022-05-03 11:16:54.011767/checkpoints/agent_0/ckpt-60000
+Saved checkpoint: /home/usr/Valkyrie/Valkyrie/training_metadata_pong_v4_2022-05-03 11:16:54.011767/checkpoints/replay_buffer/ckpt-3
+Checkpoint directory created.
+No checkpoint available at /home/usr/Valkyrie/Valkyrie/training_metadata_pong_v4_2022-05-03 11:16:54.011767/checkpoints/best
+Saved checkpoint: /home/usr/Valkyrie/Valkyrie/training_metadata_pong_v4_2022-05-03 11:16:54.011767/checkpoints/best/ckpt-60000
+step = 31000: loss = 0.02620415762066841
+step = 32000: loss = 0.02014324441552162
+step = 33000: loss = 0.021671095862984657
+step = 34000: loss = 0.014554526656866074
+step = 35000: loss = 0.03806135058403015
+step = 36000: loss = 0.009842710569500923
+step = 37000: loss = 0.038211021572351456
+step = 38000: loss = 0.013181865215301514
+step = 39000: loss = 0.029903549700975418
+step = 40000: loss = 0.018151944503188133
+step = 40000: Average Return = 4.0
+Saved checkpoint: /home/usr/Valkyrie/Valkyrie/training_metadata_pong_v4_2022-05-03 11:16:54.011767/checkpoints/agent_1/ckpt-40000
+step = 41000: loss = 0.013685399666428566
+step = 42000: loss = 0.022340763360261917
+step = 43000: loss = 0.02544158697128296
+step = 44000: loss = 0.01184961199760437
+step = 45000: loss = 0.027236495167016983
+step = 46000: loss = 0.010467847809195518
+step = 47000: loss = 0.011641867458820343
+step = 48000: loss = 0.011113710701465607
+step = 49000: loss = 0.022997848689556122
+step = 50000: loss = 0.012947306968271732
+step = 50000: Average Return = 10.0
+Saved checkpoint: /home/usr/Valkyrie/Valkyrie/training_metadata_pong_v4_2022-05-03 11:16:54.011767/checkpoints/agent_1/ckpt-50000
+step = 51000: loss = 0.020255327224731445
+step = 52000: loss = 0.008246256038546562
+step = 53000: loss = 0.01620727963745594
+step = 54000: loss = 0.00993361696600914
+step = 55000: loss = 0.008393906056880951
+step = 56000: loss = 0.008933071047067642
+step = 57000: loss = 0.007336573675274849
+step = 58000: loss = 0.009574689902365208
+step = 59000: loss = 0.006694153882563114
+step = 60000: loss = 0.0088123120367527
+step = 60000: Average Return = 12.0
+Saved checkpoint: /home/usr/Valkyrie/Valkyrie/training_metadata_pong_v4_2022-05-03 11:16:54.011767/checkpoints/agent_1/ckpt-60000
+Saved checkpoint: /home/usr/Valkyrie/Valkyrie/training_metadata_pong_v4_2022-05-03 11:16:54.011767/checkpoints/agent_1/ckpt-60000
+Saved checkpoint: /home/usr/Valkyrie/Valkyrie/training_metadata_pong_v4_2022-05-03 11:16:54.011767/checkpoints/replay_buffer/ckpt-4
+Checkpoint directory created.
+No checkpoint available at /home/usr/Valkyrie/Valkyrie/training_metadata_pong_v4_2022-05-03 11:16:54.011767/checkpoints/best
+Saved checkpoint: /home/usr/Valkyrie/Valkyrie/training_metadata_pong_v4_2022-05-03 11:16:54.011767/checkpoints/best/ckpt-60000
+step = 31000: loss = 0.011656716465950012
+step = 32000: loss = 0.01638411357998848
+step = 33000: loss = 0.015412322245538235
+step = 34000: loss = 0.005134959239512682
+step = 35000: loss = 0.012118726968765259
+step = 36000: loss = 0.020186858251690865
+step = 37000: loss = 0.0135221928358078
+step = 38000: loss = 0.00914979912340641
+step = 39000: loss = 0.019863564521074295
+step = 40000: loss = 0.01937541365623474
+step = 40000: Average Return = 12.0
+Saved checkpoint: /home/usr/Valkyrie/Valkyrie/training_metadata_pong_v4_2022-05-03 11:16:54.011767/checkpoints/g_0/ckpt-40000
+step = 41000: loss = 0.010649746283888817
+step = 42000: loss = 0.010537862777709961
+step = 43000: loss = 0.021068496629595757
+step = 44000: loss = 0.03166481480002403
+step = 45000: loss = 0.014141645282506943
+step = 46000: loss = 0.014824539422988892
+step = 47000: loss = 0.01050768792629242
+step = 48000: loss = 0.013021590188145638
+step = 49000: loss = 0.013605845160782337
+step = 50000: loss = 0.012257029302418232
+step = 50000: Average Return = 12.0
+Saved checkpoint: /home/usr/Valkyrie/Valkyrie/training_metadata_pong_v4_2022-05-03 11:16:54.011767/checkpoints/g_0/ckpt-50000
+step = 51000: loss = 0.007912754081189632
+step = 52000: loss = 0.005038044415414333
+step = 53000: loss = 0.008817292749881744
+step = 54000: loss = 0.01203679759055376
+step = 55000: loss = 0.019388733431696892
+step = 56000: loss = 0.007344607263803482
+step = 57000: loss = 0.009586920961737633
+step = 58000: loss = 0.004813090898096561
+step = 59000: loss = 0.012835843488574028
+step = 60000: loss = 0.05263732373714447
+step = 60000: Average Return = 12.0
+Saved checkpoint: /home/usr/Valkyrie/Valkyrie/training_metadata_pong_v4_2022-05-03 11:16:54.011767/checkpoints/g_0/ckpt-60000
+Saved checkpoint: /home/usr/Valkyrie/Valkyrie/training_metadata_pong_v4_2022-05-03 11:16:54.011767/checkpoints/g_0/ckpt-60000
+Saved checkpoint: /home/usr/Valkyrie/Valkyrie/training_metadata_pong_v4_2022-05-03 11:16:54.011767/checkpoints/replay_buffer/ckpt-5
+Checkpoint directory created.
+No checkpoint available at /home/usr/Valkyrie/Valkyrie/training_metadata_pong_v4_2022-05-03 11:16:54.011767/checkpoints/best
+Saved checkpoint: /home/usr/Valkyrie/Valkyrie/training_metadata_pong_v4_2022-05-03 11:16:54.011767/checkpoints/best/ckpt-60000
+step = 31000: loss = 0.039157457649707794
+step = 32000: loss = 0.038712773472070694
+step = 33000: loss = 0.009060947224497795
+step = 34000: loss = 0.039440009742975235
+step = 35000: loss = 0.008140957914292812
+step = 36000: loss = 0.006898914463818073
+step = 37000: loss = 0.012955240905284882
+step = 38000: loss = 0.006208459381014109
+step = 39000: loss = 0.012757215648889542
+step = 40000: loss = 0.00705480482429266
+step = 40000: Average Return = 7.0
+Saved checkpoint: /home/usr/Valkyrie/Valkyrie/training_metadata_pong_v4_2022-05-03 11:16:54.011767/checkpoints/g_1/ckpt-40000
+step = 41000: loss = 0.011822746135294437
+step = 42000: loss = 0.013078471645712852
+step = 43000: loss = 0.018591703847050667
+step = 44000: loss = 0.0103334691375494
+step = 45000: loss = 0.014922176487743855
+step = 46000: loss = 0.0075364019721746445
+step = 47000: loss = 0.030337149277329445
+step = 48000: loss = 0.006451487075537443
+step = 49000: loss = 0.009011705406010151
+step = 50000: loss = 0.0058744000270962715
+step = 50000: Average Return = 11.0
+Saved checkpoint: /home/usr/Valkyrie/Valkyrie/training_metadata_pong_v4_2022-05-03 11:16:54.011767/checkpoints/g_1/ckpt-50000
+step = 51000: loss = 0.005922234617173672
+step = 52000: loss = 0.01044267974793911
+step = 53000: loss = 0.012154594995081425
+step = 54000: loss = 0.004984256811439991
+step = 55000: loss = 0.009516078978776932
+step = 56000: loss = 0.007263550069183111
+step = 57000: loss = 0.007489247713238001
+step = 58000: loss = 0.02184956520795822
+step = 59000: loss = 0.006319512613117695
+step = 60000: loss = 0.011506899259984493
+step = 60000: Average Return = 12.0
+Saved checkpoint: /home/usr/Valkyrie/Valkyrie/training_metadata_pong_v4_2022-05-03 11:16:54.011767/checkpoints/g_1/ckpt-60000
+Saved checkpoint: /home/usr/Valkyrie/Valkyrie/training_metadata_pong_v4_2022-05-03 11:16:54.011767/checkpoints/g_1/ckpt-60000
+Saved checkpoint: /home/usr/Valkyrie/Valkyrie/training_metadata_pong_v4_2022-05-03 11:16:54.011767/checkpoints/replay_buffer/ckpt-6
+Checkpoint directory created.
+No checkpoint available at /home/usr/Valkyrie/Valkyrie/training_metadata_pong_v4_2022-05-03 11:16:54.011767/checkpoints/best
+Saved checkpoint: /home/usr/Valkyrie/Valkyrie/training_metadata_pong_v4_2022-05-03 11:16:54.011767/checkpoints/best/ckpt-60000
+Checkpoint directory created.
+No checkpoint available at /home/usr/Valkyrie/Valkyrie/training_metadata_pong_v4_2022-05-03 11:16:54.011767/checkpoints/g_2
+Saved checkpoint: /home/usr/Valkyrie/Valkyrie/training_metadata_pong_v4_2022-05-03 11:16:54.011767/checkpoints/g_2/ckpt-60000
+Agent: g_2
+Starting mutation.
+Agent fitness before mutation: 12.0
+Mutation Finished.
+Agent fitness after mutation: 12.0
+Skipping crossover.
+Checkpoint directory created.
+No checkpoint available at /home/usr/Valkyrie/Valkyrie/training_metadata_pong_v4_2022-05-03 11:16:54.011767/checkpoints/g_3
+Saved checkpoint: /home/usr/Valkyrie/Valkyrie/training_metadata_pong_v4_2022-05-03 11:16:54.011767/checkpoints/g_3/ckpt-60000
+Agent: g_3
+Starting mutation.
+Agent fitness before mutation: 12.0
+Mutation Finished.
+Agent fitness after mutation: 12.0
+Skipping crossover.
+step = 61000: loss = 0.009385605342686176
+step = 62000: loss = 0.011829378083348274
+step = 63000: loss = 0.0888773649930954
+step = 64000: loss = 0.013544930145144463
+step = 65000: loss = 0.024522073566913605
+step = 66000: loss = 0.013375571928918362
+step = 67000: loss = 0.011026263236999512
+step = 68000: loss = 0.008749764412641525
+step = 69000: loss = 0.032644253224134445
+step = 70000: loss = 0.0057444325648248196
+step = 70000: Average Return = 11.0
+Saved checkpoint: /home/usr/Valkyrie/Valkyrie/training_metadata_pong_v4_2022-05-03 11:16:54.011767/checkpoints/agent_1/ckpt-70000
+step = 71000: loss = 0.00987432524561882
+step = 72000: loss = 0.007328561972826719
+step = 73000: loss = 0.00817401334643364
+step = 74000: loss = 0.011064188554883003
+step = 75000: loss = 0.011190807446837425
+step = 76000: loss = 0.01162436418235302
+step = 77000: loss = 0.009184972383081913
+step = 78000: loss = 0.06248689070343971
+step = 79000: loss = 0.009536956436932087
+step = 80000: loss = 0.012946504168212414
+step = 80000: Average Return = 9.0
+Saved checkpoint: /home/usr/Valkyrie/Valkyrie/training_metadata_pong_v4_2022-05-03 11:16:54.011767/checkpoints/agent_1/ckpt-80000
+step = 81000: loss = 0.011764142662286758
+step = 82000: loss = 0.006778108887374401
+step = 83000: loss = 0.01667366921901703
+step = 84000: loss = 0.006199537310749292
+step = 85000: loss = 0.007516360841691494
+step = 86000: loss = 0.011312015354633331
+step = 87000: loss = 0.011973134241998196
+step = 88000: loss = 0.007710005156695843
+step = 89000: loss = 0.006322745233774185
+step = 90000: loss = 0.02582218497991562
+step = 90000: Average Return = 12.0
+Saved checkpoint: /home/usr/Valkyrie/Valkyrie/training_metadata_pong_v4_2022-05-03 11:16:54.011767/checkpoints/agent_1/ckpt-90000
+Saved checkpoint: /home/usr/Valkyrie/Valkyrie/training_metadata_pong_v4_2022-05-03 11:16:54.011767/checkpoints/agent_1/ckpt-90000
+Saved checkpoint: /home/usr/Valkyrie/Valkyrie/training_metadata_pong_v4_2022-05-03 11:16:54.011767/checkpoints/replay_buffer/ckpt-7
+Checkpoint directory created.
+No checkpoint available at /home/usr/Valkyrie/Valkyrie/training_metadata_pong_v4_2022-05-03 11:16:54.011767/checkpoints/best
+Saved checkpoint: /home/usr/Valkyrie/Valkyrie/training_metadata_pong_v4_2022-05-03 11:16:54.011767/checkpoints/best/ckpt-90000
+step = 61000: loss = 0.014445648528635502
+step = 62000: loss = 0.025448331609368324
+step = 63000: loss = 0.014329018071293831
+step = 64000: loss = 0.007735006511211395
+step = 65000: loss = 0.00784345157444477
+step = 66000: loss = 0.012128882110118866
+step = 67000: loss = 0.012526368722319603
+step = 68000: loss = 0.014083395712077618
+step = 69000: loss = 0.004601713269948959
+step = 70000: loss = 0.013100286945700645
+step = 70000: Average Return = 15.0
+Saved checkpoint: /home/usr/Valkyrie/Valkyrie/training_metadata_pong_v4_2022-05-03 11:16:54.011767/checkpoints/g_0/ckpt-70000
+step = 71000: loss = 0.02002907544374466
+step = 72000: loss = 0.02432694286108017
+step = 73000: loss = 0.04928106069564819
+step = 74000: loss = 0.03223733603954315
+step = 75000: loss = 0.007188696879893541
+step = 76000: loss = 0.0065599484369158745
+step = 77000: loss = 0.010143972933292389
+step = 78000: loss = 0.010688019916415215
+step = 79000: loss = 0.011395999230444431
+step = 80000: loss = 0.011012336239218712
+step = 80000: Average Return = 15.0
+Saved checkpoint: /home/usr/Valkyrie/Valkyrie/training_metadata_pong_v4_2022-05-03 11:16:54.011767/checkpoints/g_0/ckpt-80000
+step = 81000: loss = 0.014851835556328297
+step = 82000: loss = 0.005383484531193972
+step = 83000: loss = 0.006314942613244057
+step = 84000: loss = 0.006228153593838215
+step = 85000: loss = 0.045711759477853775
+step = 86000: loss = 0.010463501326739788
+step = 87000: loss = 0.01646622270345688
+step = 88000: loss = 0.005305476486682892
+step = 89000: loss = 0.007096902001649141
+step = 90000: loss = 0.0063332305289804935
+step = 90000: Average Return = 15.0
+Saved checkpoint: /home/usr/Valkyrie/Valkyrie/training_metadata_pong_v4_2022-05-03 11:16:54.011767/checkpoints/g_0/ckpt-90000
+Saved checkpoint: /home/usr/Valkyrie/Valkyrie/training_metadata_pong_v4_2022-05-03 11:16:54.011767/checkpoints/g_0/ckpt-90000
+Saved checkpoint: /home/usr/Valkyrie/Valkyrie/training_metadata_pong_v4_2022-05-03 11:16:54.011767/checkpoints/replay_buffer/ckpt-8
+Checkpoint directory created.
+No checkpoint available at /home/usr/Valkyrie/Valkyrie/training_metadata_pong_v4_2022-05-03 11:16:54.011767/checkpoints/best
+Saved checkpoint: /home/usr/Valkyrie/Valkyrie/training_metadata_pong_v4_2022-05-03 11:16:54.011767/checkpoints/best/ckpt-90000
+step = 61000: loss = 0.010461829602718353
+step = 62000: loss = 0.03585009649395943
+step = 63000: loss = 0.01941746473312378
+step = 64000: loss = 0.04368290305137634
+step = 65000: loss = 0.01597673073410988
+step = 66000: loss = 0.017938341945409775
+step = 67000: loss = 0.006403699517250061
+step = 68000: loss = 0.013539453968405724
+step = 69000: loss = 0.008505546487867832
+step = 70000: loss = 0.023131664842367172
+step = 70000: Average Return = 6.0
+Saved checkpoint: /home/usr/Valkyrie/Valkyrie/training_metadata_pong_v4_2022-05-03 11:16:54.011767/checkpoints/g_2/ckpt-70000
+step = 71000: loss = 0.011626383289694786
+step = 72000: loss = 0.010706466622650623
+step = 73000: loss = 0.023770881816744804
+step = 74000: loss = 0.011820567771792412
+step = 75000: loss = 0.009342055767774582
+step = 76000: loss = 0.017132839187979698
+step = 77000: loss = 0.007036177441477776
+step = 78000: loss = 0.007620332762598991
+step = 79000: loss = 0.004452590364962816
+step = 80000: loss = 0.01359655149281025
+step = 80000: Average Return = 9.0
+Saved checkpoint: /home/usr/Valkyrie/Valkyrie/training_metadata_pong_v4_2022-05-03 11:16:54.011767/checkpoints/g_2/ckpt-80000
+step = 81000: loss = 0.020060217007994652
+step = 82000: loss = 0.004949287045747042
+step = 83000: loss = 0.0099417082965374
+step = 84000: loss = 0.007884422317147255
+step = 85000: loss = 0.007971436716616154
+step = 86000: loss = 0.015789348632097244
+step = 87000: loss = 0.004295246675610542
+step = 88000: loss = 0.0062698982656002045
+step = 89000: loss = 0.006577734369784594
+step = 90000: loss = 0.010213605128228664
+step = 90000: Average Return = 11.0
+Saved checkpoint: /home/usr/Valkyrie/Valkyrie/training_metadata_pong_v4_2022-05-03 11:16:54.011767/checkpoints/g_2/ckpt-90000
+Saved checkpoint: /home/usr/Valkyrie/Valkyrie/training_metadata_pong_v4_2022-05-03 11:16:54.011767/checkpoints/g_2/ckpt-90000
+Saved checkpoint: /home/usr/Valkyrie/Valkyrie/training_metadata_pong_v4_2022-05-03 11:16:54.011767/checkpoints/replay_buffer/ckpt-9
+step = 61000: loss = 0.019182264804840088
+step = 62000: loss = 0.007714657578617334
+step = 63000: loss = 0.011421732604503632
+step = 64000: loss = 0.0134380292147398
+step = 65000: loss = 0.011367480270564556
+step = 66000: loss = 0.009851483628153801
+step = 67000: loss = 0.007931521162390709
+step = 68000: loss = 0.0071944622322916985
+step = 69000: loss = 0.004683684092015028
+step = 70000: loss = 0.005398779176175594
+step = 70000: Average Return = 12.0
+Saved checkpoint: /home/usr/Valkyrie/Valkyrie/training_metadata_pong_v4_2022-05-03 11:16:54.011767/checkpoints/g_3/ckpt-70000
+step = 71000: loss = 0.004105253145098686
+step = 72000: loss = 0.011378578841686249
+step = 73000: loss = 0.006263212766498327
+step = 74000: loss = 0.014511007815599442
+step = 75000: loss = 0.10527083277702332
+step = 76000: loss = 0.011750485748052597
+step = 77000: loss = 0.008576363325119019
+step = 78000: loss = 0.003806856693699956
+step = 79000: loss = 0.007079330272972584
+step = 80000: loss = 0.008256006985902786
+step = 80000: Average Return = 15.0
+Saved checkpoint: /home/usr/Valkyrie/Valkyrie/training_metadata_pong_v4_2022-05-03 11:16:54.011767/checkpoints/g_3/ckpt-80000
+step = 81000: loss = 0.028904223814606667
+step = 82000: loss = 0.00601810310035944
+step = 83000: loss = 0.0078071909956634045
+step = 84000: loss = 0.009562702849507332
+step = 85000: loss = 0.0109450314193964
+step = 86000: loss = 0.013844659551978111
+step = 87000: loss = 0.006162446923553944
+step = 88000: loss = 0.002959189936518669
+step = 89000: loss = 0.018621312454342842
+step = 90000: loss = 0.007109822705388069
+step = 90000: Average Return = 21.0
+Saved checkpoint: /home/usr/Valkyrie/Valkyrie/training_metadata_pong_v4_2022-05-03 11:16:54.011767/checkpoints/g_3/ckpt-90000
+Saved checkpoint: /home/usr/Valkyrie/Valkyrie/training_metadata_pong_v4_2022-05-03 11:16:54.011767/checkpoints/g_3/ckpt-90000
+Saved checkpoint: /home/usr/Valkyrie/Valkyrie/training_metadata_pong_v4_2022-05-03 11:16:54.011767/checkpoints/replay_buffer/ckpt-10
+Checkpoint directory created.
+No checkpoint available at /home/usr/Valkyrie/Valkyrie/training_metadata_pong_v4_2022-05-03 11:16:54.011767/checkpoints/best
+Saved checkpoint: /home/usr/Valkyrie/Valkyrie/training_metadata_pong_v4_2022-05-03 11:16:54.011767/checkpoints/best/ckpt-90000
+findfont: Matching sans\-serif:style=normal:variant=normal:weight=normal:stretch=normal:size=10.0.
+findfont: score(<Font 'STIXSizeFiveSym' (STIXSizFiveSymReg.ttf) normal normal 400 normal>) = 10.05
+findfont: score(<Font 'STIXSizeTwoSym' (STIXSizTwoSymBol.ttf) normal normal 700 normal>) = 10.335
+findfont: score(<Font 'STIXGeneral' (STIXGeneralBolIta.ttf) italic normal 700 normal>) = 11.335
+findfont: score(<Font 'STIXNonUnicode' (STIXNonUni.ttf) normal normal 400 normal>) = 10.05
+findfont: score(<Font 'DejaVu Serif' (DejaVuSerif.ttf) normal normal 400 normal>) = 10.05
+findfont: score(<Font 'cmmi10' (cmmi10.ttf) normal normal 400 normal>) = 10.05
+findfont: score(<Font 'STIXSizeTwoSym' (STIXSizTwoSymReg.ttf) normal normal 400 normal>) = 10.05
+findfont: score(<Font 'STIXGeneral' (STIXGeneralBol.ttf) normal normal 700 normal>) = 10.335
+findfont: score(<Font 'cmex10' (cmex10.ttf) normal normal 400 normal>) = 10.05
+findfont: score(<Font 'DejaVu Sans Mono' (DejaVuSansMono.ttf) normal normal 400 normal>) = 10.05
+findfont: score(<Font 'STIXSizeFourSym' (STIXSizFourSymReg.ttf) normal normal 400 normal>) = 10.05
+findfont: score(<Font 'DejaVu Sans' (DejaVuSans-Bold.ttf) normal normal 700 normal>) = 0.33499999999999996
+findfont: score(<Font 'DejaVu Sans Mono' (DejaVuSansMono-BoldOblique.ttf) oblique normal 700 normal>) = 11.335
+findfont: score(<Font 'cmr10' (cmr10.ttf) normal normal 400 normal>) = 10.05
+findfont: score(<Font 'DejaVu Sans' (DejaVuSans-BoldOblique.ttf) oblique normal 700 normal>) = 1.335
+findfont: score(<Font 'STIXNonUnicode' (STIXNonUniIta.ttf) italic normal 400 normal>) = 11.05
+findfont: score(<Font 'cmb10' (cmb10.ttf) normal normal 400 normal>) = 10.05
+findfont: score(<Font 'STIXSizeFourSym' (STIXSizFourSymBol.ttf) normal normal 700 normal>) = 10.335
+findfont: score(<Font 'STIXGeneral' (STIXGeneralItalic.ttf) italic normal 400 normal>) = 11.05
+findfont: score(<Font 'DejaVu Sans' (DejaVuSans-Oblique.ttf) oblique normal 400 normal>) = 1.05
+findfont: score(<Font 'cmsy10' (cmsy10.ttf) normal normal 400 normal>) = 10.05
+findfont: score(<Font 'STIXSizeOneSym' (STIXSizOneSymBol.ttf) normal normal 700 normal>) = 10.335
+findfont: score(<Font 'STIXSizeOneSym' (STIXSizOneSymReg.ttf) normal normal 400 normal>) = 10.05
+findfont: score(<Font 'DejaVu Sans' (DejaVuSans.ttf) normal normal 400 normal>) = 0.05
+findfont: score(<Font 'STIXSizeThreeSym' (STIXSizThreeSymBol.ttf) normal normal 700 normal>) = 10.335
+findfont: score(<Font 'STIXSizeThreeSym' (STIXSizThreeSymReg.ttf) normal normal 400 normal>) = 10.05
+findfont: score(<Font 'STIXNonUnicode' (STIXNonUniBol.ttf) normal normal 700 normal>) = 10.335
+findfont: score(<Font 'DejaVu Sans Display' (DejaVuSansDisplay.ttf) normal normal 400 normal>) = 10.05
+findfont: score(<Font 'cmtt10' (cmtt10.ttf) normal normal 400 normal>) = 10.05
+findfont: score(<Font 'cmss10' (cmss10.ttf) normal normal 400 normal>) = 10.05
+findfont: score(<Font 'DejaVu Serif' (DejaVuSerif-Italic.ttf) italic normal 400 normal>) = 11.05
+findfont: score(<Font 'DejaVu Sans Mono' (DejaVuSansMono-Bold.ttf) normal normal 700 normal>) = 10.335
+findfont: score(<Font 'DejaVu Serif Display' (DejaVuSerifDisplay.ttf) normal normal 400 normal>) = 10.05
+findfont: score(<Font 'DejaVu Serif' (DejaVuSerif-Bold.ttf) normal normal 700 normal>) = 10.335
+findfont: score(<Font 'DejaVu Serif' (DejaVuSerif-BoldItalic.ttf) italic normal 700 normal>) = 11.335
+findfont: score(<Font 'DejaVu Sans Mono' (DejaVuSansMono-Oblique.ttf) oblique normal 400 normal>) = 11.05
+findfont: score(<Font 'STIXGeneral' (STIXGeneral.ttf) normal normal 400 normal>) = 10.05
+findfont: score(<Font 'STIXNonUnicode' (STIXNonUniBolIta.ttf) italic normal 700 normal>) = 11.335
+findfont: score(<Font 'DejaVu Sans' (DejaVuSans-Bold.ttf) normal normal 700 normal>) = 0.33499999999999996
+findfont: score(<Font 'DejaVu Sans Mono' (DejaVuSansMono.ttf) normal normal 400 normal>) = 10.05
+findfont: score(<Font 'DejaVu Serif' (DejaVuSerif.ttf) normal normal 400 normal>) = 10.05
+findfont: score(<Font 'DejaVu Sans' (DejaVuSans.ttf) normal normal 400 normal>) = 0.05
+findfont: score(<Font 'DejaVu Serif' (DejaVuSerif-Bold.ttf) normal normal 700 normal>) = 10.335
+findfont: score(<Font 'DejaVu Sans Mono' (DejaVuSansMono-Bold.ttf) normal normal 700 normal>) = 10.335
+findfont: Matching sans\-serif:style=normal:variant=normal:weight=normal:stretch=normal:size=10.0 to DejaVu Sans ('/usr/local/lib/python3.8/dist-packages/matplotlib/mpl-data/fonts/ttf/DejaVuSans.ttf') with score of 0.050000.
