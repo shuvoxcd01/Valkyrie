@@ -46,6 +46,6 @@ You can build docker image from the dockerfile(s) provided inside the  `dockerfi
 Use `dockerfile-dev-env/with-gpu/dockerfile` to build image with GPU support.   
 Use `dockerfile-dev-env/without-gpu/dockerfile` to build image without GPU support.    
 Change directory into either `dockerfile-dev-env/with-gpu/` or `dockerfile-dev-env/without-gpu/` and then run the following command.    
-`docker build .`. 
+`docker build .`    
 Then use this image to run a container and use that as the dev environment.
 
