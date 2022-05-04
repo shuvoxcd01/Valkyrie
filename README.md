@@ -41,3 +41,11 @@ The easiest way to create the experimental environment is to use a docker contai
 2. Run `train_pong.py`.  
 `python src/train_pong.py`
 
+### Still facing problem?
+You can build docker image from the dockerfile(s) provided inside the  `dockerfile-dev-env` directory.  
+Use `dockerfile-dev-env/with-gpu/dockerfile` to build image with GPU support. 
+Use `dockerfile-dev-env/without-gpu/dockerfile` to build image without GPU support.  
+Change directory into either `dockerfile-dev-env/with-gpu/` or `dockerfile-dev-env/without-gpu/` and then run the following command.  
+`docker build .`
+Then use this image to run a container and use that as the dev environment.
+
