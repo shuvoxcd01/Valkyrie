@@ -4,9 +4,10 @@
 A population based approach to train reinforcement learning agents to play Atari 2600 games. 
 The targeted environment here is Pong-v4. **The agent achieves state of the art result on this environment.**
 
-<img src="https://user-images.githubusercontent.com/16299215/166633629-0cb29ab6-0bb2-4e72-97fc-c6f57c94b78c.png" width="300" />
+<img src="https://user-images.githubusercontent.com/16299215/166744161-9f5badd1-4a03-4bf9-a505-4e0cce73e299.png" width="350" />
 
 ---
+
 
 ### Python Version
 Python 3.8
