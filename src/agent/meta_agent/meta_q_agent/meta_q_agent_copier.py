@@ -33,8 +33,16 @@ class MetaQAgentCopier(MetaAgentCopier):
             q_net.create_variables()
             q_net.set_weights(meta_agent.tf_agent._q_network.get_weights())
 
-        optimizer = tf.keras.optimizers.Adam.from_config(
-            meta_agent.tf_agent._optimizer.get_config())
+        # optimizer = tf.keras.optimizers.Adam.from_config(
+        #     meta_agent.tf_agent._optimizer.get_config())
+
+        optimizer = tf.compat.v1.train.RMSPropOptimizer(
+            learning_rate=2.5e-3,
+            decay=0.95,
+            momentum=0.0,
+            epsilon=0.00001,
+            centered=True
+        )
 
         training_step_counter = tf.Variable(
             meta_agent.tf_agent.train_step_counter.numpy())
@@ -67,7 +75,7 @@ class MetaQAgentCopier(MetaAgentCopier):
             agent_2), "Types of crossover partners don't match."
 
         generation = agent_1.generation
-        name = agent_1.name + "_generation_" + str(generation)
+        name = agent_1.name
 
         q_net = agent_1.tf_agent._q_network.copy()
 
@@ -98,8 +106,16 @@ class MetaQAgentCopier(MetaAgentCopier):
 
                 q_net.layers[i].set_weights(new_weights_list)
 
-        optimizer = tf.keras.optimizers.Adam.from_config(
-            agent_1.tf_agent._optimizer.get_config())
+        # optimizer = tf.keras.optimizers.Adam.from_config(
+        #     agent_1.tf_agent._optimizer.get_config())
+
+        optimizer = tf.compat.v1.train.RMSPropOptimizer(
+            learning_rate=2.5e-3,
+            decay=0.95,
+            momentum=0.0,
+            epsilon=0.00001,
+            centered=True
+        )
 
         training_step_counter = tf.Variable(0)
 

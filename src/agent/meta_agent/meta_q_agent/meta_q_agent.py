@@ -18,9 +18,9 @@ class MetaQAgent(MetaAgent):
                          generation=generation, name=name)
         self.logger = logging.getLogger()
 
-    def mutate(self):
+    def mutate(self, mean: float = 0., variance: float = 0.0001):
         # self.logger.debug(f"Performing mutation: {self.tf_agent.name}")
-        d = tfp.distributions.Normal(loc=0., scale=0.0001)
+        d = tfp.distributions.Normal(loc=mean, scale=variance)
 
         # old_weights = self.tf_agent._q_network.get_weights()
 
