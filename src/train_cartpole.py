@@ -42,7 +42,7 @@ INITIAL_COLLECT_STEPS = 200
 POPSIZE = 2
 NUM_GRADIENT_BASED_TRAINING_EPOCH = 100
 TRAINING_META_DATA_DIR = os.path.join(os.path.dirname(
-    os.path.dirname(__file__)), "training_metadata_cartpole_" + str(datetime.now()))
+    os.path.dirname(__file__)), "training_metadata_cartpole_" + str(datetime.now().strftime('%Y-%m-%d-%H.%M.%S')))
 
 CHECKPOINT_BASE_DIR = os.path.join(TRAINING_META_DATA_DIR, "checkpoints")
 SUMMARY_BASE_DIR = os.path.join(TRAINING_META_DATA_DIR, "tf_summaries")
