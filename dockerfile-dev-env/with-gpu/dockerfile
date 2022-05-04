@@ -1,0 +1,25 @@
+FROM tensorflow/tensorflow:2.7.0-gpu-jupyter
+
+WORKDIR /home
+
+RUN apt-key adv --fetch-keys https://developer.download.nvidia.com/compute/cuda/repos/ubuntu1804/x86_64/3bf863cc.pub
+RUN apt-key adv --fetch-keys https://developer.download.nvidia.com/compute/machine-learning/repos/ubuntu1804/x86_64/7fa2af80.pub
+
+RUN apt-get update \  
+       && apt-get install -y --no-install-recommends \  
+       apt-utils \  
+       build-essential \   
+       curl \  
+       xvfb \
+       ffmpeg \
+       freeglut3-dev \
+       xorg-dev \
+       libsdl2-dev \
+       swig \
+       cmake \
+       python-opengl
+
+COPY requirements.txt requirements.txt
+RUN pip3 install -r requirements.txt
+
+EXPOSE 8888
