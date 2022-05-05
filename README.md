@@ -51,7 +51,8 @@ Change directory into either `dockerfile-dev-env/with-gpu/` or `dockerfile-dev-e
 Then use this image to run a container and use that as the dev environment.
 
 ---  
-## Agent performance after training
+## Agent performance after training (Click to play)
+
 [![Agent performance after training](https://user-images.githubusercontent.com/16299215/166955921-49d846f4-a169-4083-b624-08fe459d3656.jpg)](https://youtu.be/B2VBBLMl7LI "Agent performance after training")
 
 
