@@ -82,7 +82,8 @@ tf_agent = agent_factory.get_agent(name="best", network=network,
                                    optimizer=optimizer,
                                    train_step_counter=train_step_counter)
 
-base_ckpt_path = "/home/usr/Valkyrie/Valkyrie/training_metadata_pong_v4_2022-05-03 copy/checkpoints"
+# base_ckpt_path = "/home/usr/Valkyrie/Valkyrie/training_metadata_pong_v4_2022-05-03 copy/checkpoints"
+base_ckpt_path = "/home/Valkyrie/all_training_metadata/pong/training_metadata_pong_v4_2022-05-02 11:41:02.937099/checkpoints"
 ckpt_manager = AgentCheckpointManagerFactory(
     base_ckpt_dir=base_ckpt_path).get_agent_checkpoint_manager(tf_agent)
 
