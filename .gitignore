@@ -137,3 +137,5 @@ checkpoints/*
 src/checkpoints/*
 training_metadata_*
 old_training_metadata/*
+all_training_metadata/*
+*.ipynb
