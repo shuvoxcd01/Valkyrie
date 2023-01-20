@@ -32,7 +32,6 @@ class PopulationBasedTraining:
                  fitness_evaluator: FitnessEvaluator,
                  fitness_trakcer: FitnessTracker,
                  parent_tracker: ParentTracker,
-                 agent_copier: MetaAgentCopier,
                  num_individuals: Optional[int] = None,
                  best_possible_fitness: Optional[int] = None,
                  num_training_iterations: int = 100,
@@ -50,7 +49,6 @@ class PopulationBasedTraining:
 
         self.gradient_based_trainer = gradient_based_trainer
         self.fitness_evaluator = fitness_evaluator
-        self.agent_copier = agent_copier
 
         self.best_possible_fitness = best_possible_fitness
         self.logger = logging.getLogger()
@@ -107,8 +105,7 @@ class PopulationBasedTraining:
                     if self.best:
                         self.best.checkpoint_manager.delete_checkpointer()
 
-                    self.best = self.agent_copier.copy_agent(
-                        meta_agent=meta_agent, name="best")
+                    self.best = meta_agent.copy(name="best")
 
                     self.best.summary_writer_manager.write_scalar_summary(
                         "Best fitness", data=fitness_after_gradient_based_training, step=iteration)
@@ -126,8 +123,8 @@ class PopulationBasedTraining:
                 agent_name = self.generated_agent_prefix + \
                     str(self.generated_agent_count)
                 self.generated_agent_count += 1
-                meta_agent = self.agent_copier.copy_agent(
-                    meta_agent=parent_meta_agent, name=agent_name, agent_generation=0)
+                meta_agent = parent_meta_agent.copy(
+                    name=agent_name, generation=0)
 
                 assert parent_meta_agent.tf_agent is not meta_agent.tf_agent
                 assert parent_meta_agent.tf_agent._q_network is not meta_agent.tf_agent._q_network
@@ -180,8 +177,11 @@ class PopulationBasedTraining:
                     self.logger.debug(
                         f"Parent 1 keep percentage: {beta}")
 
-                    child = self.agent_copier.crossover(agent_1=meta_agent, agent_2=self.best,
-                                                        agent_1_keep_precentage=beta, fitness_evaluator=self.fitness_evaluator)
+                    child = meta_agent.crossover(
+                        partner=self.best, self_keep_percentage=beta)
+                    child.update_fitness(self.fitness_evaluator.evaluate_fitness(
+                        policy=child.tf_agent.policy))
+                    child.save()
 
                     self.logger.debug("Crossover done.")
                     self.logger.debug(f"Child fitness: {child.fitness}")
