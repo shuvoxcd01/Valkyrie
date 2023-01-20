@@ -28,3 +28,15 @@ class MetaAgent(ABC):
     @abstractmethod
     def mutate(self, mean: float, variance: float):
         pass
+    
+    @abstractmethod
+    def crossover(self, partner, self_keep_percentage):
+        pass
+    
+    @abstractmethod
+    def copy(self):
+        pass
+
+    @abstractmethod
+    def get_network(self):
+        pass
