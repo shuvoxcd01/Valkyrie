@@ -1,15 +1,20 @@
 import logging
-from tf_agents.drivers.driver import Driver
 from tf_agents.agents import TFAgent
+from Valkyrie.src.agent.meta_agent.meta_q_agent.meta_q_agent_copier import MetaQAgentCopier
+from Valkyrie.src.evolutionary_operations.evo_ops_nn import EvolutionaryOperationsNN
 from agent.meta_agent.meta_agent import MetaAgent
 from summary_writer.summary_writer_manager import SummaryWriterManager
 from checkpoint_manager.agent_checkpoint_manager import AgentCheckpointManager
+from Valkyrie.src.agent.meta_agent.meta_agent import MetaAgent
 import tensorflow_probability as tfp
+from tf_agents.networks import Network, Sequential
+import logging
 
 
 class MetaQAgent(MetaAgent):
     def __init__(self, tf_agent: TFAgent, checkpoint_manager: AgentCheckpointManager,
                  summary_writer_manager: SummaryWriterManager,
+                 agent_copier: MetaQAgentCopier,
                  fitness=0, previous_fitness=0,
                  generation: int = 0, name=None) -> None:
         super().__init__(tf_agent=tf_agent, checkpoint_manager=checkpoint_manager,
@@ -17,23 +22,52 @@ class MetaQAgent(MetaAgent):
                          fitness=fitness, previous_fitness=previous_fitness,
                          generation=generation, name=name)
         self.logger = logging.getLogger()
+        self.agent_copier = agent_copier
 
     def mutate(self, mean: float = 0., variance: float = 0.0001):
-        # self.logger.debug(f"Performing mutation: {self.tf_agent.name}")
-        d = tfp.distributions.Normal(loc=mean, scale=variance)
+        self.logger.debug(f"Performing mutation: {self.tf_agent.name}")
+        q_net = self.get_network()
+        embedding_layer = q_net.layers[0]
+        mutation_layer_indices = [-1]
+        EvolutionaryOperationsNN.mutate(
+            network=embedding_layer, mut_layer_indices=mutation_layer_indices, mean=mean, variance=variance)
+        self.logger.debug(f"{self.name}: Mutation performed.")
 
-        # old_weights = self.tf_agent._q_network.get_weights()
+    def get_network(self):
+        return self.tf_agent._q_network
 
-        for layer in self.tf_agent._q_network.layers:
-            if layer.trainable:
-                weights_list = layer.get_weights()
-                new_weights_list = []
-                for weights in weights_list:
-                    noise = d.sample(sample_shape=weights.shape)
-                    new_weights = weights + noise
-                    new_weights_list.append(new_weights)
-                layer.set_weights(new_weights_list)
+    def crossover(self, partner, self_keep_percentage):
+        assert type(self) == type(
+            partner), "Types of crossover partners don't match."
 
-        # self.logger.debug(f"{self.name}: Mutation performed.")
-        # self.logger.debug(f"Old weights: {old_weights}")
-        # self.logger.debug(f"New weights: {self.tf_agent._q_network.get_weights()}")
+        generation = self.generation
+        name = self.name
+        agent_1_network = self.get_network()
+        agent_2_network = partner.get_network()
+        child_network = agent_1_network.copy()
+
+        if isinstance(child_network, Network) and not isinstance(child_network, Sequential):
+            child_network.create_variables()
+            child_network.set_weights(
+                agent_1_network.get_weights())
+
+        EvolutionaryOperationsNN.crossover(
+            self_keep_percentage, agent_1_network, agent_2_network, child_network)
+
+        child_meta_agent = self.agent_copier.copy_agent(
+            meta_agent=self, name=name, agent_generation=generation, training_step_counter=0, network=child_network)
+
+        return child_meta_agent
+
+    def copy(self, name: str = None, generation: int = None):
+        if name is None:
+            name = self.name
+
+        if generation is None:
+            generation = self.generation
+
+        return self.agent_copier.copy_agent(meta_agent=self, name=name, agent_generation=generation)
+
+
+    def save(self):
+        self.checkpoint_manager.save_checkpointer()
