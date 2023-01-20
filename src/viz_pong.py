@@ -1,21 +1,14 @@
-from datetime import datetime
-import IPython
-import imageio
-import base64
-import os
-import tensorflow as tf
-import numpy as np
-from tf_agents.environments import tf_py_environment
-from Valkyrie.all_training_metadata import ALL_TRAINING_METADATA_DIR
-from Valkyrie.src.agent.tf_agent.ddqn_agent_factory import DdqnAgentFactory
-from Valkyrie.src.checkpoint_manager.agent_checkpoint_manager_factory import AgentCheckpointManagerFactory
-from Valkyrie.src.embedding_visualization.embedding_data_manager import EmbeddingDataManager
 
+import tensorflow as tf
+from tf_agents.environments import tf_py_environment
+
+from Valkyrie.src.agent.tf_agent.ddqn_agent_factory import DdqnAgentFactory
+from Valkyrie.src.checkpoint_manager.agent_checkpoint_manager_factory import \
+    AgentCheckpointManagerFactory
+from Valkyrie.src.embedding_visualization.embedding_data_manager import \
+    EmbeddingDataManager
 from Valkyrie.src.environment.pong_factory import PongFactory
 from Valkyrie.src.network.atari_q_network_factory import AtariQNetworkFactory
-from PIL import Image
-from tensorboard.plugins import projector
-
 
 FC_LAYER_PARAMS = (512,)
 CONV_LAYER_PARAMS = ((32, (8, 8), 4), (64, (4, 4), 2), (64, (3, 3), 1))
@@ -71,26 +64,29 @@ ckpt_manager.create_or_initialize_checkpointer()
 # TRAINING_META_DATA_DIR = os.path.join(ALL_TRAINING_METADATA_DIR, "pong",
 #                                       "training_metadata_pong_v4_" + str(datetime.now().strftime('%Y-%m-%d-%H.%M.%S')))
 
-TRAINING_META_DATA_DIR = "/home/Valkyrie/all_training_metadata/pong/training_metadata_pong_v4_embedding_test4/"
+TRAINING_META_DATA_DIR = "/home/Valkyrie/all_training_metadata/pong/training_metadata_pong_v4_embedding_test5/"
 embedding_data_manager = EmbeddingDataManager(
     base_metadata_dir=TRAINING_META_DATA_DIR)
 
 for _ in range(2):
     time_step = eval_env.reset()
     observation_img = eval_py_env.render()
+    features, _network_state = tf_agent._q_network._encoder(
+        time_step.observation)
     preds = tf_agent._q_network(time_step.observation)[0].numpy()
     q_value = preds.max()
     embedding_data_manager.add_data(
-        img=observation_img, tensor=preds, q_value=q_value)
+        img=observation_img, tensor=features, q_value=q_value)
     while not time_step.is_last():
         action_step = tf_agent.policy.action(time_step)
         time_step = eval_env.step(action_step.action)
         observation_img = eval_py_env.render()
+        features, _network_state = tf_agent._q_network._encoder(
+            time_step.observation)
         preds = tf_agent._q_network(time_step.observation)[0].numpy()
         q_value = preds.max()
         embedding_data_manager.add_data(
-            img=observation_img, tensor=preds, q_value=q_value)
+            img=observation_img, tensor=features, q_value=q_value)
 
 embedding_data_manager.save()
 embedding_data_manager.configure_projector()
-
