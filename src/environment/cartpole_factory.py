@@ -8,6 +8,7 @@ class CartPoleFactory(EnvFactory):
         self.env_name = 'CartPole-v0'
 
     def get_py_env(self):
-        py_env = suite_gym.load(environment_name=self.env_name)
+        py_env = suite_gym.load(
+            environment_name=self.env_name)
 
         return py_env
