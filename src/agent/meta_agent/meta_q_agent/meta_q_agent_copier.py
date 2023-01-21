@@ -48,6 +48,8 @@ class MetaQAgentCopier(MetaAgentCopier):
         if training_step_counter is None:
             training_step_counter = tf.Variable(
                 meta_agent.tf_agent.train_step_counter.numpy())
+        else:
+            training_step_counter = tf.Variable(training_step_counter)
 
         copied_tf_agent = self.agent_factory.get_agent(
             name=name, network=network, optimizer=optimizer, train_step_counter=training_step_counter)
