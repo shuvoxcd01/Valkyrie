@@ -2,10 +2,12 @@ import os
 import sys
 from datetime import datetime
 import tensorflow as tf
+from Valkyrie.all_training_metadata import ALL_TRAINING_METADATA_DIR
+from Valkyrie.src.agent.meta_agent.meta_q_agent.meta_q_agent_factory import MetaQAgentFactory
+from Valkyrie.src.network.q_networks.cartpole.cart_pole_q_network_factory import CartPoleQNetworkFactory
 from parent_tracker.parent_tracker import ParentTracker
 from fitness_tracker.fitness_tracker import FitnessTracker
 from agent.meta_agent.meta_q_agent.meta_q_agent_copier import MetaQAgentCopier
-from network.cart_pole_q_network_factory import CartPoleQNetworkFactory
 from checkpoint_manager.agent_checkpoint_manager_factory import AgentCheckpointManagerFactory
 from summary_writer.summay_writer_manager_factory import SummaryWriterManagerFactory
 from training.population_based_training.population_based_training import PopulationBasedTraining
@@ -36,8 +38,8 @@ INITIAL_COLLECT_STEPS = 200
 
 POPSIZE = 2
 NUM_GRADIENT_BASED_TRAINING_EPOCH = 100
-TRAINING_META_DATA_DIR = os.path.join(os.path.dirname(
-    os.path.dirname(__file__)), "training_metadata_cartpole_" + str(datetime.now().strftime('%Y-%m-%d-%H.%M.%S')))
+TRAINING_META_DATA_DIR = os.path.join(ALL_TRAINING_METADATA_DIR, "cartpole",
+                                      "training_metadata_cartpole_" + str(datetime.now().strftime('%Y-%m-%d-%H.%M.%S')))
 
 CHECKPOINT_BASE_DIR = os.path.join(TRAINING_META_DATA_DIR, "checkpoints")
 SUMMARY_BASE_DIR = os.path.join(TRAINING_META_DATA_DIR, "tf_summaries")
@@ -98,9 +100,13 @@ agent_checkpoint_manager_factory = AgentCheckpointManagerFactory(
 summary_writer_manager_factory = SummaryWriterManagerFactory(
     base_summary_writer_dir=SUMMARY_BASE_DIR)
 
+meta_agent_factory = MetaQAgentFactory()
+meta_agent_copier = MetaQAgentCopier(
+    agent_factory=agent_factory, agent_ckpt_manager_factory=agent_checkpoint_manager_factory,
+    summary_writer_manager_factory=summary_writer_manager_factory, meta_agent_factory=meta_agent_factory)
+
 for i in range(POPSIZE):
     network = network_factory.get_network()
-    # optimizer = tf.keras.optimizers.Adam(learning_rate=INITIAL_LEARNING_RATE)
 
     optimizer = tf.compat.v1.train.RMSPropOptimizer(
         learning_rate=INITIAL_LEARNING_RATE,
@@ -121,7 +127,8 @@ for i in range(POPSIZE):
         tf_agent=tf_agent)
 
     meta_agent = MetaQAgent(tf_agent=tf_agent, checkpoint_manager=agent_checkpoint_manager,
-                            summary_writer_manager=summary_writer_manager)
+                            summary_writer_manager=summary_writer_manager,
+                            agent_copier=meta_agent_copier)
     initial_population.append(meta_agent)
 
 
@@ -161,10 +168,6 @@ gradient_based_trainer = GradientBasedTraining(
     batch_size=BATCH_SIZE,
     best_possible_fitness=BEST_POSSIBLE_FITNESS)
 
-agent_copier = MetaQAgentCopier(
-    agent_factory=agent_factory, agent_ckpt_manager_factory=agent_checkpoint_manager_factory,
-    summary_writer_manager_factory=summary_writer_manager_factory,
-    max_collect_steps=MAX_COLLECT_STEPS, max_collect_episodes=MAX_COLLECT_EPISODES)
 
 fitness_tracker = FitnessTracker(csv_file_path=FITNESS_TRACKER_FILE_PATH)
 parent_tracker = ParentTracker(csv_file_path=PARENT_TRACKER_FILE_PATH)
@@ -174,7 +177,6 @@ population_based_training = PopulationBasedTraining(initial_population=initial_p
                                                     fitness_evaluator=fitness_evaluator,
                                                     fitness_trakcer=fitness_tracker,
                                                     parent_tracker=parent_tracker,
-                                                    agent_copier=agent_copier,
                                                     best_possible_fitness=BEST_POSSIBLE_FITNESS
                                                     )
 

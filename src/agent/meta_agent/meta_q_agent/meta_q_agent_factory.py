@@ -7,9 +7,9 @@ from agent.meta_agent.meta_q_agent.meta_q_agent import MetaQAgent
 
 class MetaQAgentFactory(MetaAgentFactory):
 
-    def get_agent(self, tf_agent: TFAgent, checkpoint_manager: AgentCheckpointManager, summary_writer_manager: SummaryWriterManager, fitness=0, previous_fitness=0, generation: int = 0, name=None):
+    def get_agent(self, tf_agent: TFAgent, checkpoint_manager: AgentCheckpointManager, summary_writer_manager: SummaryWriterManager, agent_copier: "MetaQAgentCopier", fitness=0, previous_fitness=0, generation: int = 0, name=None):
         agent = MetaQAgent(tf_agent=tf_agent, checkpoint_manager=checkpoint_manager,
-                           summary_writer_manager=summary_writer_manager, fitness=fitness,
+                           summary_writer_manager=summary_writer_manager, agent_copier=agent_copier, fitness=fitness,
                            previous_fitness=previous_fitness, generation=generation, name=name)
 
         return agent

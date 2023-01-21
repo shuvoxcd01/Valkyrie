@@ -28,7 +28,7 @@ class MetaQAgentCopier(MetaAgentCopier):
                    save_checkpoint: bool = True):
 
         if network is None:
-            network = meta_agent.get_network()
+            network = meta_agent.get_network().copy()
 
         if isinstance(network, Network) and not isinstance(network, Sequential):
             network.create_variables()
@@ -48,6 +48,8 @@ class MetaQAgentCopier(MetaAgentCopier):
         if training_step_counter is None:
             training_step_counter = tf.Variable(
                 meta_agent.tf_agent.train_step_counter.numpy())
+        else:
+            training_step_counter = tf.Variable(training_step_counter)
 
         copied_tf_agent = self.agent_factory.get_agent(
             name=name, network=network, optimizer=optimizer, train_step_counter=training_step_counter)
@@ -64,6 +66,7 @@ class MetaQAgentCopier(MetaAgentCopier):
         copied_meta_agent = self.meta_agent_factory.get_agent(
             tf_agent=copied_tf_agent, checkpoint_manager=agent_checkpoint_manager,
             summary_writer_manager=summary_writer_manager,
+            agent_copier=self,
             fitness=fitness, previous_fitness=previous_fitness,
             generation=generation)
 

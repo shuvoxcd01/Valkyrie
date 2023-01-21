@@ -1,3 +1,4 @@
+from Valkyrie.src.network.q_networks.cartpole.cartpole_q_network import CartPoleQNetwork
 from network.network_factory import NetworkFactory
 import tensorflow as tf
 from tf_agents.specs import tensor_spec
@@ -34,6 +35,6 @@ class CartPoleQNetworkFactory(NetworkFactory):
             kernel_initializer=tf.keras.initializers.RandomUniform(
                 minval=-0.03, maxval=0.03),
             bias_initializer=tf.keras.initializers.Constant(-0.2))
-        q_net = sequential.Sequential(dense_layers + [q_values_layer])
+        q_net = CartPoleQNetwork(dense_layers + [q_values_layer])
 
         return q_net

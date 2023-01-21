@@ -27,10 +27,10 @@ class MetaQAgent(MetaAgent):
     def mutate(self, mean: float = 0., variance: float = 0.0001):
         self.logger.debug(f"Performing mutation: {self.tf_agent.name}")
         q_net = self.get_network()
-        embedding_layer = q_net.layers[0]
-        mutation_layer_indices = [-1]
+
+        layers_to_mutate = q_net.get_mutation_layers()
         EvolutionaryOperationsNN.mutate(
-            network=embedding_layer, mut_layer_indices=mutation_layer_indices, mean=mean, variance=variance)
+            mutation_layers=layers_to_mutate, mean=mean, variance=variance)
         self.logger.debug(f"{self.name}: Mutation performed.")
 
     def get_network(self):
@@ -42,17 +42,23 @@ class MetaQAgent(MetaAgent):
 
         generation = self.generation
         name = self.name
-        agent_1_network = self.get_network()
-        agent_2_network = partner.get_network()
-        child_network = agent_1_network.copy()
+        parent_1_network = self.get_network()
+        parent_2_network = partner.get_network()
+        child_network = parent_1_network.copy()
 
         if isinstance(child_network, Network) and not isinstance(child_network, Sequential):
             child_network.create_variables()
             child_network.set_weights(
-                agent_1_network.get_weights())
+                parent_1_network.get_weights())
+
+        child_crossover_layers = child_network.get_crossover_layers()
+        parent_1_crossover_layers = parent_1_network.get_crossover_layers()
+        parent_2_crossover_layers = parent_2_network.get_crossover_layers()
 
         EvolutionaryOperationsNN.crossover(
-            self_keep_percentage, agent_1_network, agent_2_network, child_network)
+            self_keep_percentage, parent_1_layers=parent_1_crossover_layers,
+            parent_2_layers=parent_2_crossover_layers,
+            child_layers=child_crossover_layers)
 
         child_meta_agent = self.agent_copier.copy_agent(
             meta_agent=self, name=name, agent_generation=generation, training_step_counter=0, network=child_network)
@@ -67,7 +73,6 @@ class MetaQAgent(MetaAgent):
             generation = self.generation
 
         return self.agent_copier.copy_agent(meta_agent=self, name=name, agent_generation=generation)
-
 
     def save(self):
         self.checkpoint_manager.save_checkpointer()
