@@ -1,4 +1,4 @@
-from network.atari_q_network import AtariQNetwork
+from Valkyrie.src.network.q_networks.atari.atari_q_network import AtariQNetwork
 from network.network_factory import NetworkFactory
 from tf_agents.networks import q_network, q_rnn_network
 
