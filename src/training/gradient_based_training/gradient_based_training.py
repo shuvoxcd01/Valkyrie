@@ -1,20 +1,15 @@
-from audioop import avg
-from tensorboard import summary
 from tf_agents.agents import TFAgent
 from tf_agents.utils import common
 from tf_agents.drivers.driver import Driver
 from tf_agents.environments import TFEnvironment, PyEnvironment
 from typing import Optional, Union
-import tensorflow as tf
 from tf_agents.environments import TFEnvironment, PyEnvironment
-from tf_agents.policies import py_policy, tf_policy, py_tf_eager_policy
+from tf_agents.policies import py_tf_eager_policy
 from driver.driver_factory import DriverFactory
 from agent.meta_agent.meta_q_agent.meta_q_agent import MetaQAgent
 from checkpoint_manager.replay_buffer_checkpoint_manager import ReplayBufferCheckpointManager
 from fitness_evaluator.fitness_evaluator import FitnessEvaluator
 from replay_buffer.replay_buffer_manager import ReplayBufferManager
-import os
-from tf_agents.utils.common import Checkpointer
 import logging
 
 

@@ -2,14 +2,11 @@ import os
 import sys
 from datetime import datetime
 import tensorflow as tf
-from environment.breakout_factory import BreakoutFactory
 from parent_tracker.parent_tracker import ParentTracker
 from fitness_tracker.fitness_tracker import FitnessTracker
-from environment.pong_factory import PongFactory
 from agent.meta_agent.meta_q_agent.meta_q_agent_copier import MetaQAgentCopier
 from network.cart_pole_q_network_factory import CartPoleQNetworkFactory
 from checkpoint_manager.agent_checkpoint_manager_factory import AgentCheckpointManagerFactory
-from summary_writer.summary_writer_manager import SummaryWriterManager
 from summary_writer.summay_writer_manager_factory import SummaryWriterManagerFactory
 from training.population_based_training.population_based_training import PopulationBasedTraining
 from driver.py_driver_factory import PyDriverFactory
@@ -18,13 +15,11 @@ from checkpoint_manager.replay_buffer_checkpoint_manager import ReplayBufferChec
 from replay_buffer.reverb_replay_buffer_manager import ReverbReplayBufferManager
 from training.gradient_based_training.gradient_based_training import GradientBasedTraining
 from agent.meta_agent.meta_q_agent.meta_q_agent import MetaQAgent
-from checkpoint_manager.agent_checkpoint_manager import AgentCheckpointManager
-from network.atari_q_network_factory import AtariQNetworkFactory
 from environment.cartpole_factory import CartPoleFactory
 from agent.tf_agent.ddqn_agent_factory import DdqnAgentFactory
-from tf_agents.environments import suite_atari, suite_gym, tf_py_environment, batched_py_environment, parallel_py_environment
+from tf_agents.environments import tf_py_environment
 import logging
-from tf_agents.policies import random_tf_policy, random_py_policy, py_tf_eager_policy
+from tf_agents.policies import random_py_policy
 
 
 FC_LAYER_PARAMS = (512,)
