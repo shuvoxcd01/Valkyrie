@@ -2,7 +2,9 @@ import os
 import sys
 from datetime import datetime
 import tensorflow as tf
+from Valkyrie.all_training_metadata import ALL_TRAINING_METADATA_DIR
 from Valkyrie.src.agent.meta_agent.meta_q_agent.meta_q_agent_factory import MetaQAgentFactory
+from Valkyrie.src.network.q_networks.atari.atari_q_network_factory import AtariQNetworkFactory
 from parent_tracker.parent_tracker import ParentTracker
 from fitness_tracker.fitness_tracker import FitnessTracker
 from environment.pong_factory import PongFactory
@@ -16,7 +18,6 @@ from checkpoint_manager.replay_buffer_checkpoint_manager import ReplayBufferChec
 from replay_buffer.reverb_replay_buffer_manager import ReverbReplayBufferManager
 from training.gradient_based_training.gradient_based_training import GradientBasedTraining
 from agent.meta_agent.meta_q_agent.meta_q_agent import MetaQAgent
-from network.atari_q_network_factory import AtariQNetworkFactory
 from agent.tf_agent.ddqn_agent_factory import DdqnAgentFactory
 from tf_agents.environments import tf_py_environment
 import logging
@@ -37,8 +38,8 @@ INITIAL_COLLECT_STEPS = 200
 
 POPSIZE = 2
 NUM_GRADIENT_BASED_TRAINING_EPOCH = 30000
-TRAINING_META_DATA_DIR = os.path.join(os.path.dirname(
-    os.path.dirname(__file__)), "training_metadata_pong_v4_" + str(datetime.now().strftime('%Y-%m-%d-%H.%M.%S')))
+TRAINING_META_DATA_DIR = os.path.join(ALL_TRAINING_METADATA_DIR, "pong",
+                                      "training_metadata_pong_v4_" + str(datetime.now().strftime('%Y-%m-%d-%H.%M.%S')))
 
 CHECKPOINT_BASE_DIR = os.path.join(TRAINING_META_DATA_DIR, "checkpoints")
 SUMMARY_BASE_DIR = os.path.join(TRAINING_META_DATA_DIR, "tf_summaries")
@@ -58,6 +59,10 @@ LOG_FILE_PATH = os.path.join(TRAINING_META_DATA_DIR, "logs.log")
 BEST_POSSIBLE_FITNESS = 21
 MAX_COLLECT_STEPS = 10
 MAX_COLLECT_EPISODES = None
+Q_NETWORK_INITIALIZERS = [tf.keras.initializers.Zeros(), None]
+
+assert len(
+    Q_NETWORK_INITIALIZERS) == POPSIZE, f"Must provide {POPSIZE} numbers of initializers."
 
 
 logging.basicConfig(level=logging.DEBUG)
@@ -104,8 +109,11 @@ meta_agent_copier = MetaQAgentCopier(
     agent_factory=agent_factory, agent_ckpt_manager_factory=agent_checkpoint_manager_factory,
     summary_writer_manager_factory=summary_writer_manager_factory, meta_agent_factory=meta_agent_factory)
 
+
 for i in range(POPSIZE):
-    network = network_factory.get_network()
+    kernel_initializer = Q_NETWORK_INITIALIZERS[i]
+    network = network_factory.get_network(
+        kernel_initializer=kernel_initializer)
 
     optimizer = tf.compat.v1.train.RMSPropOptimizer(
         learning_rate=INITIAL_LEARNING_RATE,

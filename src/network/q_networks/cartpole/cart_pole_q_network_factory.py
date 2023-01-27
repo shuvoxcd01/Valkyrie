@@ -1,3 +1,4 @@
+import logging
 from Valkyrie.src.network.q_networks.cartpole.cartpole_q_network import CartPoleQNetwork
 from network.network_factory import NetworkFactory
 import tensorflow as tf
@@ -26,14 +27,23 @@ class CartPoleQNetworkFactory(NetworkFactory):
     # QNetwork consists of a sequence of Dense layers followed by a dense layer
     # with `num_actions` units to generate one q_value per available action as
     # its output.
-    def get_network(self):
+    def get_network(self, kernel_initializer=None):
+        if kernel_initializer is None:
+            logging.info("No explicit initializer provided for AtariQNetwork.")
+        else:
+            logging.info(
+                f"Explicitly provided AtariQNetwork initializer: {kernel_initializer}")
+
+        if kernel_initializer is None:
+            kernel_initializer = tf.keras.initializers.RandomUniform(
+                minval=-0.03, maxval=0.03)
+
         dense_layers = [self.dense_layer(num_units)
                         for num_units in self.fc_layer_params]
         q_values_layer = tf.keras.layers.Dense(
             self.num_actions,
             activation=None,
-            kernel_initializer=tf.keras.initializers.RandomUniform(
-                minval=-0.03, maxval=0.03),
+            kernel_initializer=kernel_initializer,
             bias_initializer=tf.keras.initializers.Constant(-0.2))
         q_net = CartPoleQNetwork(dense_layers + [q_values_layer])
 
