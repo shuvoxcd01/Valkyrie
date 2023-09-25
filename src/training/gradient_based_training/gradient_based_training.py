@@ -7,29 +7,35 @@ from tf_agents.environments import TFEnvironment, PyEnvironment
 from tf_agents.policies import py_tf_eager_policy
 from driver.driver_factory import DriverFactory
 from agent.meta_agent.meta_q_agent.meta_q_agent import MetaQAgent
-from checkpoint_manager.replay_buffer_checkpoint_manager import ReplayBufferCheckpointManager
+from checkpoint_manager.replay_buffer_checkpoint_manager import (
+    ReplayBufferCheckpointManager,
+)
 from fitness_evaluator.fitness_evaluator import FitnessEvaluator
 from replay_buffer.replay_buffer_manager import ReplayBufferManager
 import logging
 
 
 class GradientBasedTraining:
-    def __init__(self, train_env: Union[TFEnvironment, PyEnvironment],
-                 replay_buffer_manager: ReplayBufferManager,
-                 replay_buffer_checkpoint_manager: ReplayBufferCheckpointManager,
-                 initial_collect_driver: Driver,
-                 fitness_evaluator: FitnessEvaluator,
-                 num_train_iteration: int, log_interval: int, eval_interval: int,
-                 collect_driver_factory: DriverFactory,
-                 max_collect_steps: int,
-                 max_collect_episodes: int = 1,
-                 batch_size: int = 32,
-                 best_possible_fitness: Optional[int] = None) -> None:
-
+    def __init__(
+        self,
+        train_env: Union[TFEnvironment, PyEnvironment],
+        replay_buffer_manager: ReplayBufferManager,
+        # replay_buffer_checkpoint_manager: ReplayBufferCheckpointManager,
+        initial_collect_driver: Driver,
+        fitness_evaluator: FitnessEvaluator,
+        num_train_iteration: int,
+        log_interval: int,
+        eval_interval: int,
+        collect_driver_factory: DriverFactory,
+        max_collect_steps: int,
+        max_collect_episodes: int = 1,
+        batch_size: int = 32,
+        best_possible_fitness: Optional[int] = None,
+    ) -> None:
         self.train_env = train_env
         self.replay_buffer_manager = replay_buffer_manager
         self.logger = logging.getLogger()
-        self.replay_buffer_checkpoint_manager = replay_buffer_checkpoint_manager
+        # self.replay_buffer_checkpoint_manager = replay_buffer_checkpoint_manager
         self.fitness_evaluator = fitness_evaluator
         self.num_train_iteration = num_train_iteration
         self.eval_interval = eval_interval
@@ -48,23 +54,36 @@ class GradientBasedTraining:
         self.initial_collect_driver.run(self.train_env.reset())
         self.logger.debug("Initial collect driver finished running.")
 
-    def _get_collect_driver(self, tf_agent: TFAgent):
+    def _get_collect_driver(self, tf_agent: TFAgent, meta_agent_name: str):
         collect_policy = py_tf_eager_policy.PyTFEagerPolicy(
-            tf_agent.collect_policy, use_tf_function=True)
+            tf_agent.collect_policy, use_tf_function=True
+        )
 
-        collect_driver = self.collect_driver_factory.get_driver(
-            policy=collect_policy, max_steps=self.max_collect_steps, max_episodes=self.max_collect_episodes)
+        collect_driver = self.collect_driver_factory._get_driver(
+            env=self.train_env,
+            observers=[self.replay_buffer_manager.get_observer(meta_agent_name)],
+            policy=collect_policy,
+            max_steps=self.max_collect_steps,
+            max_episodes=self.max_collect_episodes,
+        )
 
         return collect_driver
 
     def train_agent(self, meta_agent: MetaQAgent):
         tf_agent = meta_agent.tf_agent
-        collect_driver = self._get_collect_driver(tf_agent=tf_agent)
+        collect_driver = self._get_collect_driver(
+            tf_agent=tf_agent, meta_agent_name=meta_agent.name
+        )
 
         tf_agent.train = common.function(tf_agent.train)
 
         iterator = self.replay_buffer_manager.get_dataset_iterator(
-            num_parallel_calls=3, batch_size=self.batch_size, num_steps=2, num_prefetch=3)
+            meta_agent.name,
+            num_parallel_calls=3,
+            batch_size=self.batch_size,
+            num_steps=2,
+            num_prefetch=3,
+        )
 
         time_step = self.train_env.reset()
 
@@ -77,25 +96,28 @@ class GradientBasedTraining:
             step = tf_agent.train_step_counter.numpy()
 
             if step % self.log_interval == 0:
-                self.logger.info(
-                    'step = {0}: loss = {1}'.format(step, train_loss))
+                self.logger.info("step = {0}: loss = {1}".format(step, train_loss))
 
             if step % self.eval_interval == 0:
-                fitness = self.fitness_evaluator.evaluate_fitness(
-                    tf_agent.policy)
+                fitness = self.fitness_evaluator.evaluate_fitness(tf_agent.policy)
                 meta_agent.update_fitness(fitness)
 
-                self.logger.info('step = {0}: Average Return = {1}'.format(
-                    step, fitness))
+                self.logger.info(
+                    "step = {0}: Average Return = {1}".format(step, fitness)
+                )
 
                 meta_agent.summary_writer_manager.write_scalar_summary(
-                    name="Average return", data=fitness)
+                    name="Average return", data=fitness
+                )
 
-                meta_agent.checkpoint_manager.save_checkpointer()
+                # meta_agent.checkpoint_manager.save_checkpointer()
 
-                if self.best_possible_fitness and meta_agent.fitness >= self.best_possible_fitness:
+                if (
+                    self.best_possible_fitness
+                    and meta_agent.fitness >= self.best_possible_fitness
+                ):
                     break
 
-        meta_agent.checkpoint_manager.save_checkpointer()
+        # meta_agent.checkpoint_manager.save_checkpointer()
 
-        self.replay_buffer_checkpoint_manager.save_checkpointer()
+        # self.replay_buffer_checkpoint_manager.save_checkpointer()

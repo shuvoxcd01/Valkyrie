@@ -1,5 +1,7 @@
-from Valkyrie.src.network.q_networks.atari.atari_q_network import AtariQNetwork
-from network.network_factory import NetworkFactory
+
+
+from Valkyrie.src.network.agent_network.network_factory import NetworkFactory
+from Valkyrie.src.network.agent_network.q_networks.atari.atari_q_network import AtariQNetwork
 
 
 class AtariQNetworkFactory(NetworkFactory):

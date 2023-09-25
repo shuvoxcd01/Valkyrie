@@ -23,6 +23,8 @@ from tf_agents.environments import tf_py_environment
 import logging
 from tf_agents.policies import random_py_policy
 
+TRAINING_META_DATA_DIR = os.path.abspath(
+    "/home/Valkyrie/all_training_metadata/pong/training_metadata_pong_v4_2023-01-27-05.28.10-retrain")
 
 FC_LAYER_PARAMS = (512,)
 CONV_LAYER_PARAMS = ((32, (8, 8), 4), (64, (4, 4), 2), (64, (3, 3), 1))
@@ -36,10 +38,9 @@ NUM_EVAL_EPISODES = 5
 EVAL_INTERVAL = 10000  # 500
 INITIAL_COLLECT_STEPS = 200
 
-POPSIZE = 2
+POPSIZE = 3
 NUM_GRADIENT_BASED_TRAINING_EPOCH = 30000
-TRAINING_META_DATA_DIR = os.path.join(ALL_TRAINING_METADATA_DIR, "pong",
-                                      "training_metadata_pong_v4_" + str(datetime.now().strftime('%Y-%m-%d-%H.%M.%S')))
+
 
 CHECKPOINT_BASE_DIR = os.path.join(TRAINING_META_DATA_DIR, "checkpoints")
 SUMMARY_BASE_DIR = os.path.join(TRAINING_META_DATA_DIR, "tf_summaries")
@@ -59,11 +60,14 @@ LOG_FILE_PATH = os.path.join(TRAINING_META_DATA_DIR, "logs.log")
 BEST_POSSIBLE_FITNESS = 21
 MAX_COLLECT_STEPS = 10
 MAX_COLLECT_EPISODES = None
-Q_NETWORK_INITIALIZERS = [tf.keras.initializers.Zeros(), None]
+Q_NETWORK_INITIALIZERS = [tf.keras.initializers.Zeros(), None, None]
 
 assert len(
     Q_NETWORK_INITIALIZERS) == POPSIZE, f"Must provide {POPSIZE} numbers of initializers."
 
+TF_AGENT_NAMES = ["agent_0", "agent_1", "best"]
+assert len(
+    TF_AGENT_NAMES) == POPSIZE, f"Must provide {POPSIZE} numbers of tf-agent names."
 
 logging.basicConfig(level=logging.DEBUG)
 logger = logging.getLogger()
@@ -124,7 +128,8 @@ for i in range(POPSIZE):
     )
 
     train_step_counter = tf.Variable(0)
-    tf_agent = agent_factory.get_agent(name="agent_"+str(i), network=network,
+    tf_agent_name = TF_AGENT_NAMES[i]
+    tf_agent = agent_factory.get_agent(name=tf_agent_name, network=network,
                                        optimizer=optimizer,
                                        train_step_counter=train_step_counter)
 

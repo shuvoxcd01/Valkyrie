@@ -12,7 +12,6 @@ from Valkyrie.src.network.agent_network.q_networks.cartpole.cart_pole_q_network_
 from Valkyrie.src.network.pretraining_network.cartpole.cartpole_pretraining_network import (
     CartPolePretrainingNetwork,
 )
-from Valkyrie.src.training.pretraining.pretraining import Pretraining
 
 from parent_tracker.parent_tracker import ParentTracker
 from fitness_tracker.fitness_tracker import FitnessTracker
@@ -82,17 +81,12 @@ BEST_POSSIBLE_FITNESS = 200
 MAX_COLLECT_STEPS = 10
 MAX_COLLECT_EPISODES = None
 
-# Pretraining Params
-NUM_PRETRAINING_ITERATION = NUM_GRADIENT_BASED_TRAINING_EPOCH
-PRETRAINING_BATCH_SIZE = BATCH_SIZE
-PRETRAINING_REPLAY_BUFFER_TABLE_NAME = "PRETRAIN"
-
 # Replay Buffer Params
 REPLAY_BUFFER_NUM_PARALLEL_CALLS = 2
 REPLAY_BUFFER_BATCH_SIZE = BATCH_SIZE
 REPLAY_BUFFER_NUM_STEPS = 2
 REPLAY_BUFFER_NUM_PREFETCH = 3
-REPLAY_BUFFER_TABLE_NAMES = [PRETRAINING_REPLAY_BUFFER_TABLE_NAME]
+REPLAY_BUFFER_TABLE_NAMES = ["PRETRAIN"]
 
 
 logging.basicConfig(level=logging.DEBUG)
@@ -121,9 +115,7 @@ action_spec = train_env.action_spec()
 time_step_spec = train_env.time_step_spec()
 
 cartpole_pretraining_network = CartPolePretrainingNetwork(
-    input_tensor_spec=train_env_observation_spec,
-    conv_layer_params=CONV_LAYER_PARAMS,
-    fc_layer_params=FC_LAYER_PARAMS,
+    conv_layer_params=CONV_LAYER_PARAMS, fc_layer_params=FC_LAYER_PARAMS
 )
 
 network_factory = CartPoleQNetworkFactory(
@@ -249,19 +241,8 @@ gradient_based_trainer = GradientBasedTraining(
 fitness_tracker = FitnessTracker(csv_file_path=FITNESS_TRACKER_FILE_PATH)
 parent_tracker = ParentTracker(csv_file_path=PARENT_TRACKER_FILE_PATH)
 
-pretriner = Pretraining(
-    pretraining_network=cartpole_pretraining_network,
-    replay_buffer_manager=replay_buffer_manager,
-    optimizer="adam",
-    # replay_buffer_checkpoint_manager=
-    num_iteration=NUM_PRETRAINING_ITERATION,
-    batch_size=PRETRAINING_BATCH_SIZE,
-    replay_buffer_table_name=PRETRAINING_REPLAY_BUFFER_TABLE_NAME,
-)
-
 population_based_training = PopulationBasedTraining(
     initial_population=initial_population,
-    pretrainer=pretriner,
     gradient_based_trainer=gradient_based_trainer,
     fitness_evaluator=fitness_evaluator,
     fitness_trakcer=fitness_tracker,

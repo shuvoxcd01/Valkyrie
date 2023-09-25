@@ -2,8 +2,9 @@ from typing import List
 from tf_agents.networks import q_network
 import tensorflow as tf
 
-from Valkyrie.src.network.q_networks.base_q_network import BaseQNetwork
 import logging
+
+from Valkyrie.src.network.agent_network.q_networks.base_q_network import BaseQNetwork
 
 
 class AtariQNetwork(q_network.QNetwork, BaseQNetwork):
