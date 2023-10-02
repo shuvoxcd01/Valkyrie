@@ -7,7 +7,6 @@ from Valkyrie.src.network.pretraining_network.base_pretraining_network import (
 )
 
 
-@singleton
 class CartPolePretrainingNetwork(BasePretrainingNetwork):
     def __init__(self, input_tensor_spec, conv_layer_params, fc_layer_params, *args):
         super().__init__()
@@ -26,16 +25,14 @@ class CartPolePretrainingNetwork(BasePretrainingNetwork):
             activation=tf.keras.activations.relu,
             kernel_initializer=tf.keras.initializers.VarianceScaling(
                 scale=2.0, mode="fan_in", distribution="truncated_normal"
-            )
+            ),
         )
 
     def _build_encoder(self, kernel_initializer=None):
         if kernel_initializer is None:
             logging.info("No explicit initializer provided for AtariQNetwork.")
         else:
-            logging.info(
-                f"Explicitly provided AtariQNetwork initializer: {kernel_initializer}"
-            )
+            logging.info(f"Explicitly provided initializer: {kernel_initializer}")
 
         if kernel_initializer is None:
             kernel_initializer = tf.keras.initializers.RandomUniform(
@@ -61,7 +58,6 @@ class CartPolePretrainingNetwork(BasePretrainingNetwork):
         return decoder
 
     def call(self, x):
-        print(f"Autoencoder called with {x}")
         encoded = self.encoder_network(x)
         decoded = self.decoder_network(encoded)
         return decoded
