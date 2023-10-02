@@ -5,21 +5,15 @@ from summary_writer.summary_writer_manager import SummaryWriterManager
 from checkpoint_manager.agent_checkpoint_manager import AgentCheckpointManager
 
 
-class MetaAgent(ABC):
-    def __init__(self, tf_agent: TFAgent, checkpoint_manager: AgentCheckpointManager,
-                 summary_writer_manager: SummaryWriterManager,
-                 fitness=0, previous_fitness=0,
-                 generation: int = 0, name=None) -> None:
-        self.tf_agent = tf_agent
-        self.checkpoint_manager = checkpoint_manager
-        self.summary_writer_manager = summary_writer_manager
+class Agent(ABC):
+    def __init__(
+        self, name: str, network, fitness=0, previous_fitness=0, generation: int = 0
+    ) -> None:
+        self.name = name
         self.previous_fitness = previous_fitness
         self.fitness = fitness
         self.generation = generation
-        self.name = self.extract_name_from_tf_agent() if name is None else name
-
-    def extract_name_from_tf_agent(self):
-        return self.tf_agent.name.split("_generation_")[0]
+        self.network = network
 
     def update_fitness(self, value):
         self.previous_fitness = self.fitness
@@ -28,11 +22,11 @@ class MetaAgent(ABC):
     @abstractmethod
     def mutate(self, mean: float, variance: float):
         pass
-    
+
     @abstractmethod
     def crossover(self, partner, self_keep_percentage):
         pass
-    
+
     @abstractmethod
     def copy(self):
         pass

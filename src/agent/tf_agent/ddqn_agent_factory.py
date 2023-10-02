@@ -1,9 +1,10 @@
-from agent.tf_agent.agent_factory import AgentFactory
 from tf_agents.utils import common
 from tf_agents.agents.dqn import dqn_agent
 from tf_agents.networks import Network
 import tensorflow as tf
 from tf_agents.typing.types import Optimizer
+
+from Valkyrie.src.agent.tf_agent.agent_factory import AgentFactory
 
 
 class DdqnAgentFactory(AgentFactory):
