@@ -51,9 +51,13 @@ class CartPoleQNetworkFactory(NetworkFactory):
         )
 
         pretrained_layers = self.pretraining_network.get_pretrained_layers()
-        trainable_layers = [q_values_layer]
+        trainable_dense_layer = self.create_dense_layer(100)
+        trainable_layers = [trainable_dense_layer, q_values_layer]
         len_trainable_layers = len(trainable_layers)
 
-        q_net = CartPoleQNetwork(pretrained_layers + trainable_layers, len_trainable_layers=len_trainable_layers)
+        q_net = CartPoleQNetwork(
+            pretrained_layers + trainable_layers,
+            len_trainable_layers=len_trainable_layers,
+        )
 
         return q_net
