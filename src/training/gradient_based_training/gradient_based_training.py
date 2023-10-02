@@ -28,7 +28,7 @@ class GradientBasedTraining:
         eval_interval: int,
         collect_driver_factory: DriverFactory,
         max_collect_steps: int,
-        max_collect_episodes: int = 1,
+        max_collect_episodes: int = 0,
         batch_size: int = 32,
         best_possible_fitness: Optional[int] = None,
     ) -> None:
@@ -46,6 +46,9 @@ class GradientBasedTraining:
         self.collect_driver_factory = collect_driver_factory
         self.max_collect_steps = max_collect_steps
         self.max_collect_episodes = max_collect_episodes
+        self.pretraining_table_name = "PRETRAIN" #ToDo Remove from here
+
+        assert self.max_collect_steps > self.batch_size  # ToDo: Investigate
 
         self._initialize()
 
@@ -61,7 +64,10 @@ class GradientBasedTraining:
 
         collect_driver = self.collect_driver_factory._get_driver(
             env=self.train_env,
-            observers=[self.replay_buffer_manager.get_observer(meta_agent_name)],
+            observers=[
+                self.replay_buffer_manager.get_observer(meta_agent_name),
+                self.replay_buffer_manager.get_observer(self.pretraining_table_name), #ToDo: Find a better way
+            ],
             policy=collect_policy,
             max_steps=self.max_collect_steps,
             max_episodes=self.max_collect_episodes,
@@ -70,6 +76,9 @@ class GradientBasedTraining:
         return collect_driver
 
     def train_agent(self, meta_agent: MetaQAgent):
+        self.logger.info(
+            f"Initiating gradient-based training for agent {meta_agent.name}"
+        )
         tf_agent = meta_agent.tf_agent
         collect_driver = self._get_collect_driver(
             tf_agent=tf_agent, meta_agent_name=meta_agent.name
@@ -87,13 +96,24 @@ class GradientBasedTraining:
 
         time_step = self.train_env.reset()
 
-        for _ in range(self.num_train_iteration):
-            time_step, _ = collect_driver.run(time_step)
+        for it in range(self.num_train_iteration):
+            self.logger.info(
+                f"Gradient based training iteration {it}/{self.num_train_iteration}"
+            )
 
+            self.logger.info("Running collect driver.")
+            time_step, _ = collect_driver.run(time_step)
+            self.logger.info("Collect driver finished running.")
+
+            self.logger.info("Gathering experiences from dataset iterator.")
             experience, unused_info = next(iterator)
+
+            self.logger.info("Training tf_agent")
             train_loss = tf_agent.train(experience).loss
 
             step = tf_agent.train_step_counter.numpy()
+            
+            self.logger.info(f"Agent {meta_agent.name} (internal) training step: {step}")
 
             if step % self.log_interval == 0:
                 self.logger.info("step = {0}: loss = {1}".format(step, train_loss))
