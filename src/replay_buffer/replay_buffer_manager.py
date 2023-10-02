@@ -1,4 +1,5 @@
 from abc import ABC, abstractmethod
+from typing import Optional
 
 
 class ReplayBufferManager(ABC):
@@ -43,6 +44,17 @@ class ReplayBufferManager(ABC):
         batch_size: int,
         num_steps: int,
         num_prefetch: int,
+    ):
+        pass
+
+    @abstractmethod
+    def get_observation_iterator(
+        self,
+        table_name: str,
+        num_parallel_calls: Optional[int] = None,
+        batch_size: Optional[int] = None,
+        num_steps: Optional[int] = None,
+        num_prefetch: Optional[int] = None,
     ):
         pass
 
