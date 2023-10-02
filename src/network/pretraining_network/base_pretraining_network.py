@@ -2,7 +2,6 @@ from tensorflow.keras.models import Model
 from singleton_decorator import singleton
 
 
-# ToDo: Make the base class singleton so that all the child classes are singleton too.
 class BasePretrainingNetwork(Model):
     def __init__(self):
         super().__init__()
@@ -16,12 +15,3 @@ class BasePretrainingNetwork(Model):
         self.encoder_network.trainable = False
 
         return self.encoder_layers
-
-    def train(self):
-        self.encoder_network.trainable = True
-        # ToDo: Change in trainable needs recompiling.
-        self._train()
-        self.encoder_network.trainable = False
-
-    def _train(self):
-        raise NotImplementedError()
