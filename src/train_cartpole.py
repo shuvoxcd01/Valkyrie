@@ -43,15 +43,15 @@ from tf_agents.policies import random_py_policy
 
 FC_LAYER_PARAMS = (512,)
 CONV_LAYER_PARAMS = ((32, (8, 8), 4), (64, (4, 4), 2), (64, (3, 3), 1))
-INITIAL_LEARNING_RATE = 2.5e-3  # 1e-3
-TARGET_UPDATE_PERIOD = 50  # 200
-REPLAY_BUFFER_MAX_LENGTH = 100000
+INITIAL_LEARNING_RATE = 1e-3
+TARGET_UPDATE_PERIOD = 25  # 200
+REPLAY_BUFFER_MAX_LENGTH = 1000
 
 BATCH_SIZE = 32  # 64
-LOG_INTERVAL = 20  # 250
+LOG_INTERVAL = 5  # 20  # 250
 NUM_EVAL_EPISODES = 5
-EVAL_INTERVAL = 50  # 500
-INITIAL_COLLECT_STEPS = 200
+EVAL_INTERVAL = 10  # 50  # 500
+INITIAL_COLLECT_STEPS = 100  # 200
 
 POPSIZE = 4
 NUM_GRADIENT_BASED_TRAINING_EPOCH = 100
@@ -79,11 +79,11 @@ if not os.path.exists(TRAINING_META_DATA_DIR):
 LOG_FILE_PATH = os.path.join(TRAINING_META_DATA_DIR, "logs.log")
 
 BEST_POSSIBLE_FITNESS = 200
-MAX_COLLECT_STEPS = 10
+MAX_COLLECT_STEPS = 50
 MAX_COLLECT_EPISODES = None
 
 # Pretraining Params
-NUM_PRETRAINING_ITERATION = NUM_GRADIENT_BASED_TRAINING_EPOCH
+NUM_PRETRAINING_ITERATION = 150
 PRETRAINING_BATCH_SIZE = BATCH_SIZE
 PRETRAINING_REPLAY_BUFFER_TABLE_NAME = "PRETRAIN"
 
@@ -121,6 +121,12 @@ action_spec = train_env.action_spec()
 time_step_spec = train_env.time_step_spec()
 
 cartpole_pretraining_network = CartPolePretrainingNetwork(
+    input_tensor_spec=train_env_observation_spec,
+    conv_layer_params=CONV_LAYER_PARAMS,
+    fc_layer_params=FC_LAYER_PARAMS,
+)
+
+running_cartpole_pretraining_network = CartPolePretrainingNetwork(
     input_tensor_spec=train_env_observation_spec,
     conv_layer_params=CONV_LAYER_PARAMS,
     fc_layer_params=FC_LAYER_PARAMS,
@@ -250,13 +256,15 @@ fitness_tracker = FitnessTracker(csv_file_path=FITNESS_TRACKER_FILE_PATH)
 parent_tracker = ParentTracker(csv_file_path=PARENT_TRACKER_FILE_PATH)
 
 pretriner = Pretraining(
-    pretraining_network=cartpole_pretraining_network,
+    running_pretraining_network=running_cartpole_pretraining_network,
+    stable_pretraining_network=cartpole_pretraining_network,
     replay_buffer_manager=replay_buffer_manager,
-    optimizer="adam",
+    optimizer=tf.keras.optimizers.Adam(learning_rate=0.0001),
     # replay_buffer_checkpoint_manager=
     num_iteration=NUM_PRETRAINING_ITERATION,
     batch_size=PRETRAINING_BATCH_SIZE,
     replay_buffer_table_name=PRETRAINING_REPLAY_BUFFER_TABLE_NAME,
+    tf_summary_base_dir=SUMMARY_BASE_DIR,
 )
 
 population_based_training = PopulationBasedTraining(
