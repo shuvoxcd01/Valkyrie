@@ -10,7 +10,7 @@ class BasePretrainingNetwork(Model):
 
     def get_pretrained_layers(self):
         if self.encoder_layers is None or self.encoder_network is None:
-            raise Exception("Encoder layers are not built")
+            raise Exception("Encoder layers have not been built.")
 
         self.encoder_network.trainable = False
 
