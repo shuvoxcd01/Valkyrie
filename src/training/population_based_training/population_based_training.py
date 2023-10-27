@@ -81,7 +81,8 @@ class PopulationBasedTraining:
             meta_agent.update_fitness(fitness)
 
         for iteration in range(self.num_training_iterations):
-            self.pretrainer.train()
+            assert self.sanity_check(self.population), "Sanity check failed."
+            self.pretrainer.train(agents_to_sync=self.population)
 
             for meta_agent in self.population:
                 meta_agent.generation += 1
@@ -204,7 +205,24 @@ class PopulationBasedTraining:
                     self.logger.debug(f"Parent 2 fitness: {crossover_partner.fitness}")
                     self.logger.debug(f"Parent 1 keep percentage: {crossover_prob}")
 
-                    self_keep_percentage = min(max((1.0 / (1.0 + math.exp(-(meta_agent.fitness - crossover_partner.fitness)))), 0.1), 0.9)
+                    self_keep_percentage = min(
+                        max(
+                            (
+                                1.0
+                                / (
+                                    1.0
+                                    + math.exp(
+                                        -(
+                                            meta_agent.fitness
+                                            - crossover_partner.fitness
+                                        )
+                                    )
+                                )
+                            ),
+                            0.1,
+                        ),
+                        0.9,
+                    )
 
                     child = meta_agent.crossover(
                         partner=crossover_partner,
@@ -342,3 +360,26 @@ class PopulationBasedTraining:
         self.logger.info(f"Crossover probability: {crossover_prob}")
 
         return crossover_prob, soft_distance, soft_distance_index
+
+    def sanity_check(self, agents: List[MetaAgent]):
+        if len(agents) <= 1:
+            return True
+
+        ground_agent = agents[0]
+        ground_agent_layers = ground_agent.get_network().get_pretrained_layers()
+
+        for agent in agents[1:]:
+            agent_layers = agent.get_network().get_pretrained_layers()
+
+            _sum = 0.0
+
+            for ground_layer, agent_layer in zip(ground_agent_layers, agent_layers):
+                ground_layer_weights_list = ground_layer.get_weights()
+                agent_layer_weights_list = agent_layer.get_weights()
+
+                for gl_weights, al_weights in zip(
+                    ground_layer_weights_list, agent_layer_weights_list
+                ):
+                    _sum += tf.reduce_sum(gl_weights - al_weights).numpy()
+
+            return _sum == 0.0
