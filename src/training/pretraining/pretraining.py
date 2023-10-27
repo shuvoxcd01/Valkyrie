@@ -1,6 +1,7 @@
 from tf_agents.drivers.driver import Driver
-from typing import Union
+from typing import List, Optional, Union
 import tensorflow as tf
+from Valkyrie.src.agent.meta_agent.meta_agent import MetaAgent
 from Valkyrie.src.checkpoint_manager.replay_buffer_checkpoint_manager import (
     ReplayBufferCheckpointManager,
 )
@@ -48,7 +49,7 @@ class Pretraining:
         self.last_updated_weights = None
 
         self.logger = logging.getLogger()
-        
+
         self._initialize()
 
     def _initialize(self):
@@ -59,23 +60,35 @@ class Pretraining:
             num_steps=1,
             num_prefetch=3,
         )
-        
+
         dummy_input = next(iterator)
-        
+
         self.stable_network(dummy_input)
         self.running_network(dummy_input)
-        
+
         self.running_network.set_weights(self.stable_network.get_weights())
-        
+
         self.logger.info("Pretraining initialized.")
 
-    def train(self):
+    def train(self, agents_to_sync: Optional[List[MetaAgent]] = None):
         self.logger.info("Starting pretraining ...")
         self.running_network.trainable = True
         self.running_network.compile(optimizer=self.optimizer, loss=self.loss_fn)
         self._train()
         self.running_network.trainable = False
         self.logger.info("Pretraining done...")
+
+        if agents_to_sync:
+            for agent in agents_to_sync:
+                self.logger.info(
+                    f"Synchronizing agent {agent.name}'s pretrained layers."
+                )
+                self.sync_agent(agent)
+                self.logger.info(f"Agent {agent.name} synced.")
+
+    def sync_agent(self, agent: MetaAgent):
+        network = agent.get_network()
+        network.set_pretrained_layers(self.stable_network.get_pretrained_layers())
 
     def _train(self):
         if self.last_updated_weights:
