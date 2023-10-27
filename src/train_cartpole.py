@@ -48,12 +48,12 @@ TARGET_UPDATE_PERIOD = 25  # 200
 REPLAY_BUFFER_MAX_LENGTH = 1000
 
 BATCH_SIZE = 32  # 64
-LOG_INTERVAL = 5  # 20  # 250
+LOG_INTERVAL = 20  # 250
 NUM_EVAL_EPISODES = 5
-EVAL_INTERVAL = 10  # 50  # 500
+EVAL_INTERVAL = 50  # 500
 INITIAL_COLLECT_STEPS = 100  # 200
 
-POPSIZE = 4
+POPSIZE = 2
 NUM_GRADIENT_BASED_TRAINING_EPOCH = 100
 TRAINING_META_DATA_DIR = os.path.join(
     ALL_TRAINING_METADATA_DIR,
@@ -83,7 +83,7 @@ MAX_COLLECT_STEPS = 50
 MAX_COLLECT_EPISODES = None
 
 # Pretraining Params
-NUM_PRETRAINING_ITERATION = 150
+NUM_PRETRAINING_ITERATION = 100  # 150
 PRETRAINING_BATCH_SIZE = BATCH_SIZE
 PRETRAINING_REPLAY_BUFFER_TABLE_NAME = "PRETRAIN"
 
@@ -164,7 +164,7 @@ meta_agent_copier = MetaQAgentCopier(
 for i in range(POPSIZE):
     network = network_factory.get_network()
 
-    optimizer = tf.compat.v1.train.RMSPropOptimizer(
+    optimizer = tf.keras.optimizers.RMSprop(
         learning_rate=INITIAL_LEARNING_RATE,
         decay=0.95,
         momentum=0.0,
@@ -259,7 +259,7 @@ pretriner = Pretraining(
     running_pretraining_network=running_cartpole_pretraining_network,
     stable_pretraining_network=cartpole_pretraining_network,
     replay_buffer_manager=replay_buffer_manager,
-    optimizer=tf.keras.optimizers.Adam(learning_rate=0.0001),
+    optimizer=tf.keras.optimizers.Adam(learning_rate=INITIAL_LEARNING_RATE, decay=0.95),
     # replay_buffer_checkpoint_manager=
     num_iteration=NUM_PRETRAINING_ITERATION,
     batch_size=PRETRAINING_BATCH_SIZE,
