@@ -1,4 +1,5 @@
 import logging
+from typing import List, Optional
 
 import tensorflow as tf
 from tf_agents.specs import tensor_spec
@@ -16,9 +17,11 @@ from Valkyrie.src.network.pretraining_network.cartpole.cartpole_pretraining_netw
 class CartPoleQNetworkFactory(NetworkFactory):
     def __init__(
         self,
+        pretraining_network: CartPolePretrainingNetwork,
         input_tensor_spec,
         action_spec,
-        pretraining_network: CartPolePretrainingNetwork,
+        fc_layer_params,
+        conv_layer_params: Optional[List] = None,
     ) -> None:
         super().__init__()
 
@@ -26,11 +29,11 @@ class CartPoleQNetworkFactory(NetworkFactory):
         self.num_actions = (
             self.action_tensor_spec.maximum - self.action_tensor_spec.minimum + 1
         )
-        self.pretraining_network = pretraining_network
+        self.pretraining_network_encoder = pretraining_network.get_pretraining_network()
+        self.conv_layer_params = conv_layer_params
+        self.fc_layer_params = fc_layer_params
 
-    # Define a helper function to create Dense layers configured with the right
-    # activation and kernel initializer.
-    def create_dense_layer(self, num_units):
+    def _create_dense_layer(self, num_units):
         return tf.keras.layers.Dense(
             num_units,
             activation=tf.keras.activations.relu,
@@ -39,9 +42,6 @@ class CartPoleQNetworkFactory(NetworkFactory):
             ),
         )
 
-    # QNetwork consists of a sequence of Dense layers followed by a dense layer
-    # with `num_actions` units to generate one q_value per available action as
-    # its output.
     def get_network(self, kernel_initializer=None):
         q_values_layer = tf.keras.layers.Dense(
             self.num_actions,
@@ -50,14 +50,15 @@ class CartPoleQNetworkFactory(NetworkFactory):
             bias_initializer=tf.keras.initializers.Constant(-0.2),
         )
 
-        pretrained_layers = self.pretraining_network.get_pretrained_layers()
-        trainable_dense_layer = self.create_dense_layer(100)
-        trainable_layers = [trainable_dense_layer, q_values_layer]
-        len_trainable_layers = len(trainable_layers)
+        dense_layers = [
+            self._create_dense_layer(num_units) for num_units in self.fc_layer_params
+        ]
+
+        trainable_layers = dense_layers + [q_values_layer]
 
         q_net = CartPoleQNetwork(
-            pretrained_layers + trainable_layers,
-            len_trainable_layers=len_trainable_layers,
+            pretraining_network=self.pretraining_network_encoder,
+            layers=trainable_layers,
         )
 
         return q_net
