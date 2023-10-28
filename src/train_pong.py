@@ -4,7 +4,7 @@ from datetime import datetime
 import tensorflow as tf
 from Valkyrie.all_training_metadata import ALL_TRAINING_METADATA_DIR
 from Valkyrie.src.agent.meta_agent.meta_q_agent.meta_q_agent_factory import MetaQAgentFactory
-from Valkyrie.src.network.q_networks.atari.atari_q_network_factory import AtariQNetworkFactory
+from Valkyrie.src.network.agent_network.q_networks.atari.atari_q_network_factory import AtariQNetworkFactory
 from parent_tracker.parent_tracker import ParentTracker
 from fitness_tracker.fitness_tracker import FitnessTracker
 from environment.pong_factory import PongFactory
