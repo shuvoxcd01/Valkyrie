@@ -3,6 +3,8 @@ from typing import List
 from tf_agents.networks import q_network
 import tensorflow as tf
 
+from Valkyrie.src.network.pretraining_network.base_pretraining_network import BasePretrainingNetwork
+
 
 class BaseQNetwork(ABC):
     @abstractmethod
@@ -13,10 +15,16 @@ class BaseQNetwork(ABC):
     def get_crossover_layers(self) -> List:
         pass
 
-    @abstractmethod
-    def get_pretrained_layers(self):
-        pass
+    # @abstractmethod
+    # def get_pretrained_layers(self):
+    #     pass
 
-    @abstractmethod
-    def set_pretrained_layers(self, layers: List):
-        pass
+    # @abstractmethod
+    # def set_pretrained_layers(self, layers: List):
+    #     pass
+
+    def get_pretraining_network(self):
+        return self.pretraining_network
+
+    def set_pretraining_network(self, network: BasePretrainingNetwork):
+        self.pretraining_network = network
