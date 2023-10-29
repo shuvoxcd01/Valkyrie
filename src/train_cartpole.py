@@ -41,20 +41,20 @@ import logging
 from tf_agents.policies import random_py_policy
 
 
-FC_LAYER_PARAMS = (512,)
+FC_LAYER_PARAMS = (512, 256, 128, 64)
 CONV_LAYER_PARAMS = ((32, (8, 8), 4), (64, (4, 4), 2), (64, (3, 3), 1))
 INITIAL_LEARNING_RATE = 1e-3
-TARGET_UPDATE_PERIOD = 25  # 200
-REPLAY_BUFFER_MAX_LENGTH = 1000
+TARGET_UPDATE_PERIOD = 50  # 200
+REPLAY_BUFFER_MAX_LENGTH = 10000
 
-BATCH_SIZE = 32  # 64
-LOG_INTERVAL = 20  # 250
+BATCH_SIZE = 64
+LOG_INTERVAL = 50  # 250
 NUM_EVAL_EPISODES = 5
 EVAL_INTERVAL = 50  # 500
-INITIAL_COLLECT_STEPS = 100  # 200
+INITIAL_COLLECT_STEPS = 200
 
-POPSIZE = 2
-NUM_GRADIENT_BASED_TRAINING_EPOCH = 100
+POPSIZE = 1
+NUM_GRADIENT_BASED_TRAINING_EPOCH = 100  # 600
 TRAINING_META_DATA_DIR = os.path.join(
     ALL_TRAINING_METADATA_DIR,
     "cartpole",
@@ -79,11 +79,11 @@ if not os.path.exists(TRAINING_META_DATA_DIR):
 LOG_FILE_PATH = os.path.join(TRAINING_META_DATA_DIR, "logs.log")
 
 BEST_POSSIBLE_FITNESS = 200
-MAX_COLLECT_STEPS = 50
+MAX_COLLECT_STEPS = 100
 MAX_COLLECT_EPISODES = None
 
 # Pretraining Params
-NUM_PRETRAINING_ITERATION = 100  # 150
+NUM_PRETRAINING_ITERATION = 100
 PRETRAINING_BATCH_SIZE = BATCH_SIZE
 PRETRAINING_REPLAY_BUFFER_TABLE_NAME = "PRETRAIN"
 
@@ -136,6 +136,7 @@ network_factory = CartPoleQNetworkFactory(
     input_tensor_spec=train_env_observation_spec,
     action_spec=action_spec,
     pretraining_network=cartpole_pretraining_network,
+    fc_layer_params=FC_LAYER_PARAMS,
 )
 
 
@@ -163,14 +164,7 @@ meta_agent_copier = MetaQAgentCopier(
 
 for i in range(POPSIZE):
     network = network_factory.get_network()
-
-    optimizer = tf.keras.optimizers.RMSprop(
-        learning_rate=INITIAL_LEARNING_RATE,
-        decay=0.95,
-        momentum=0.0,
-        epsilon=0.00001,
-        centered=True,
-    )
+    optimizer = tf.keras.optimizers.Adam()
 
     train_step_counter = tf.Variable(0)
     tf_agent = agent_factory.get_agent(
