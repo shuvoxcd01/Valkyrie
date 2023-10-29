@@ -26,7 +26,8 @@ class Pretraining:
         batch_size: int,
         replay_buffer_table_name: str,
         tf_summary_base_dir: str,
-        tau: float = 0.7,
+        tau: float = 0.5,
+        stable_network_update_period=500,
     ) -> None:
         self.running_network = running_pretraining_network
         self.stable_network = stable_pretraining_network
@@ -38,6 +39,8 @@ class Pretraining:
         self.replay_buffer_table_name = replay_buffer_table_name
         self.summary_witer_dir = os.path.join(tf_summary_base_dir, "pretraining")
         self.tau = tau
+        self.stable_network_update_period = stable_network_update_period
+        self.train_iter_counter = 0
 
         if not os.path.exists(self.summary_witer_dir):
             os.makedirs(self.summary_witer_dir)
@@ -78,19 +81,14 @@ class Pretraining:
         self.running_network.trainable = False
         self.logger.info("Pretraining done...")
 
-        if agents_to_sync:
-            for agent in agents_to_sync:
-                self.logger.info(
-                    f"Synchronizing agent {agent.name}'s pretrained layers."
-                )
-                self.sync_agent(agent)
-                self.logger.info(f"Agent {agent.name} synced.")
-
     def sync_agent(self, agent: MetaAgent):
         network = agent.get_network()
-        network.set_pretrained_layers(self.stable_network.get_pretrained_layers())
+        network.set_pretraining_network(self.stable_network.get_pretraining_network())
 
-    def _train(self):
+    def train_iter_counter_updater_callback(self):
+        self.train_iter_counter += 1
+
+    def _train(self, agents_to_sync: Optional[List[MetaAgent]] = None):
         if self.last_updated_weights:
             assert self.sanity_check(self.running_network.get_weights())
 
@@ -109,11 +107,23 @@ class Pretraining:
                 training_data,
                 training_data,
                 epochs=1,
-                callbacks=[self.summary_writer_callback],
+                callbacks=[
+                    self.summary_writer_callback,
+                ],
             )
+            self.train_iter_counter += 1
 
-        self.update_stable_network()
-        self.logger.info("Stable network updated.")
+            if self.train_iter_counter % self.stable_network_update_period == 0:
+                self.update_stable_network()
+                self.logger.info("Stable network updated.")
+
+                if agents_to_sync:
+                    for agent in agents_to_sync:
+                        self.logger.info(
+                            f"Synchronizing agent {agent.name}'s pretrained layers."
+                        )
+                        self.sync_agent(agent)
+                        self.logger.info(f"Agent {agent.name} synced.")
 
         self.last_updated_weights = self.running_network.get_weights()
 
