@@ -31,6 +31,8 @@ class AtariPretrainingNetwork(BasePretrainingNetwork):
         self.encoder_network, self.encoder_layers = self._build_encoder()
         self.decoder_network = self._build_decoder()
 
+        self.encoder_last_conv_layer_out_shape = None
+
     def get_encoder_layers(self):
         return self.encoder_layers
 
@@ -45,12 +47,18 @@ class AtariPretrainingNetwork(BasePretrainingNetwork):
             ),
         ]
         encoder_network = tf.keras.Sequential(encoder_layers)
+        self.encoder_last_conv_layer_out_shape = list(encoder_network.output_shape)[1:]
+
+        encoder_network.add(tf.keras.layers.Flatten())
 
         return encoder_network, encoder_layers
 
     def _build_decoder(self):
         decoder = tf.keras.Sequential(
             [
+                tf.keras.layers.Reshape(
+                    target_shape=self.encoder_last_conv_layer_out_shape
+                ),
                 tf.keras.layers.Conv2DTranspose(
                     8, kernel_size=3, strides=2, activation="relu", padding="same"
                 ),
@@ -58,7 +66,10 @@ class AtariPretrainingNetwork(BasePretrainingNetwork):
                     16, kernel_size=3, strides=2, activation="relu", padding="same"
                 ),
                 tf.keras.layers.Conv2D(
-                    self.observation_shape[-1], kernel_size=(3, 3), activation="sigmoid", padding="same"
+                    self.observation_shape[-1],
+                    kernel_size=(3, 3),
+                    activation="sigmoid",
+                    padding="same",
                 ),
             ]
         )
