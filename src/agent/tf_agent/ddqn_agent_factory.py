@@ -8,11 +8,21 @@ from Valkyrie.src.agent.tf_agent.agent_factory import AgentFactory
 
 
 class DdqnAgentFactory(AgentFactory):
-    def __init__(self, time_step_spec, action_spec,
-                 target_update_period, epsilon_greedy=0.1,
-                 n_step_update=1.0, target_update_tau=1.0, td_errors_loss_fn=common.element_wise_squared_loss,
-                 gamma=0.99, reward_scale_factor=1.0, gradient_clipping=None, debug_summaries=False,
-                 summarize_grads_and_vars=False) -> None:
+    def __init__(
+        self,
+        time_step_spec,
+        action_spec,
+        target_update_period,
+        epsilon_greedy=0.1,
+        n_step_update=1.0,
+        target_update_tau=1.0,
+        td_errors_loss_fn=common.element_wise_squared_loss,
+        gamma=0.99,
+        reward_scale_factor=1.0,
+        gradient_clipping=None,
+        debug_summaries=False,
+        summarize_grads_and_vars=False,
+    ) -> None:
         super().__init__()
 
         self.time_step_spec = time_step_spec
@@ -28,7 +38,13 @@ class DdqnAgentFactory(AgentFactory):
         self.debug_summaries = debug_summaries
         self.summarize_grads_and_vars = summarize_grads_and_vars
 
-    def get_agent(self, name: str, network: Network, optimizer: Optimizer, train_step_counter: tf.Variable):
+    def get_agent(
+        self,
+        name: str,
+        network: Network,
+        optimizer: Optimizer,
+        train_step_counter: tf.Variable,
+    ):
         agent = dqn_agent.DdqnAgent(
             name=name,
             time_step_spec=self.time_step_spec,
@@ -45,7 +61,7 @@ class DdqnAgentFactory(AgentFactory):
             gradient_clipping=self.gradient_clipping,
             debug_summaries=self.debug_summaries,
             summarize_grads_and_vars=self.summarize_grads_and_vars,
-            train_step_counter=train_step_counter
+            train_step_counter=train_step_counter,
         )
 
         agent.initialize()
