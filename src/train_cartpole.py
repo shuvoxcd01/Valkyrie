@@ -53,7 +53,7 @@ NUM_EVAL_EPISODES = 5
 EVAL_INTERVAL = 50  # 500
 INITIAL_COLLECT_STEPS = 200
 
-POPSIZE = 1
+POPSIZE = 4
 NUM_GRADIENT_BASED_TRAINING_EPOCH = 100  # 600
 TRAINING_META_DATA_DIR = os.path.join(
     ALL_TRAINING_METADATA_DIR,
@@ -83,6 +83,9 @@ MAX_COLLECT_STEPS = 100
 MAX_COLLECT_EPISODES = None
 
 # Pretraining Params
+ENCODER_FC_LAYER_PARAMS = (512, 256, 128, 64)
+DECODER_FC_LAYER_PARAMS = (128, 256, 512)
+
 NUM_PRETRAINING_ITERATION = 100
 PRETRAINING_BATCH_SIZE = BATCH_SIZE
 PRETRAINING_REPLAY_BUFFER_TABLE_NAME = "PRETRAIN"
@@ -122,14 +125,14 @@ time_step_spec = train_env.time_step_spec()
 
 cartpole_pretraining_network = CartPolePretrainingNetwork(
     input_tensor_spec=train_env_observation_spec,
-    conv_layer_params=CONV_LAYER_PARAMS,
-    fc_layer_params=FC_LAYER_PARAMS,
+    encoder_fc_layer_params=FC_LAYER_PARAMS,
+    decoder_fc_layer_params=DECODER_FC_LAYER_PARAMS,
 )
 
 running_cartpole_pretraining_network = CartPolePretrainingNetwork(
     input_tensor_spec=train_env_observation_spec,
-    conv_layer_params=CONV_LAYER_PARAMS,
-    fc_layer_params=FC_LAYER_PARAMS,
+    encoder_fc_layer_params=FC_LAYER_PARAMS,
+    decoder_fc_layer_params=DECODER_FC_LAYER_PARAMS,
 )
 
 network_factory = CartPoleQNetworkFactory(
