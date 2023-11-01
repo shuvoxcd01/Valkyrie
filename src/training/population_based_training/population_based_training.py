@@ -284,6 +284,7 @@ class PopulationBasedTraining:
             # ToDo: Fix checkpointer
             # if self.best:
             #     self.best.checkpoint_manager.delete_checkpointer()
+
             self.best = meta_agent.copy(name="best")
 
             self.best.summary_writer_manager.write_scalar_summary(
@@ -366,10 +367,12 @@ class PopulationBasedTraining:
             return True
 
         ground_agent = agents[0]
-        ground_agent_layers = ground_agent.get_network().get_pretrained_layers()
+        ground_agent_layers = (
+            ground_agent.get_network().get_pretraining_network().layers
+        )
 
         for agent in agents[1:]:
-            agent_layers = agent.get_network().get_pretrained_layers()
+            agent_layers = agent.get_network().get_pretraining_network().layers
 
             _sum = 0.0
 
