@@ -46,7 +46,7 @@ class GradientBasedTraining:
         self.collect_driver_factory = collect_driver_factory
         self.max_collect_steps = max_collect_steps
         self.max_collect_episodes = max_collect_episodes
-        self.pretraining_table_name = "PRETRAIN" #ToDo Remove from here
+        self.pretraining_table_name = "PRETRAIN"  # ToDo Remove from here
 
         assert self.max_collect_steps > self.batch_size  # ToDo: Investigate
 
@@ -66,7 +66,9 @@ class GradientBasedTraining:
             env=self.train_env,
             observers=[
                 self.replay_buffer_manager.get_observer(meta_agent_name),
-                self.replay_buffer_manager.get_observer(self.pretraining_table_name), #ToDo: Find a better way
+                self.replay_buffer_manager.get_observer(
+                    self.pretraining_table_name
+                ),  # ToDo: Find a better way
             ],
             policy=collect_policy,
             max_steps=self.max_collect_steps,
@@ -112,8 +114,10 @@ class GradientBasedTraining:
             train_loss = tf_agent.train(experience).loss
 
             step = tf_agent.train_step_counter.numpy()
-            
-            self.logger.info(f"Agent {meta_agent.name} (internal) training step: {step}")
+
+            self.logger.info(
+                f"Agent {meta_agent.name} (internal) training step: {step}"
+            )
 
             if step % self.log_interval == 0:
                 self.logger.info("step = {0}: loss = {1}".format(step, train_loss))
@@ -130,7 +134,7 @@ class GradientBasedTraining:
                     name="Average return", data=fitness
                 )
 
-                # meta_agent.checkpoint_manager.save_checkpointer()
+                #meta_agent.save()
 
                 if (
                     self.best_possible_fitness
@@ -138,6 +142,6 @@ class GradientBasedTraining:
                 ):
                     break
 
-        # meta_agent.checkpoint_manager.save_checkpointer()
+        #meta_agent.save()
 
         # self.replay_buffer_checkpoint_manager.save_checkpointer()

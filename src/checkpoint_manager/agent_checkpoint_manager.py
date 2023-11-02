@@ -27,7 +27,8 @@ class AgentCheckpointManager(CheckpointManager):
             ckpt_dir=self.ckpt_dir,
             max_to_keep=1,
             agent=self.agent,
-            policy=self.agent.policy)
+            policy=self.agent.policy,
+        )
 
         self.restore_checkpointer(checkpointer)
 
