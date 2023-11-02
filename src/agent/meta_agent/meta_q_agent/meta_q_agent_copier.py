@@ -116,9 +116,9 @@ class MetaQAgentCopier(MetaAgentCopier):
         if network is None:
             network = meta_agent.get_network().copy()
 
-        if isinstance(network, Network) and not isinstance(network, Sequential):
-            network.create_variables()
+            if isinstance(network, Network) and not isinstance(network, Sequential):
+                network.create_variables()
 
-        network.set_weights(meta_agent.tf_agent._q_network.get_weights())
+            network.set_weights(meta_agent.tf_agent._q_network.get_weights())
 
         return network
