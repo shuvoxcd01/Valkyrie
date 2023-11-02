@@ -39,7 +39,7 @@ class PopulationBasedTraining:
             len(self.population) if num_individuals is None else num_individuals
         )
 
-        self.best = None
+        self.best: MetaAgent = None
 
         self.gradient_based_trainer = gradient_based_trainer
         self.pretrainer = pretrainer
@@ -118,6 +118,7 @@ class PopulationBasedTraining:
                             data=meta_agent.fitness,
                             step=iteration,
                         )
+                        self.best.save()
                         return self.best
 
             population_sorted = sorted(
@@ -147,110 +148,15 @@ class PopulationBasedTraining:
 
                 self.logger.debug(f"Agent: {meta_agent.tf_agent.name}")
 
-                tweak_probability = self._calculate_tweak_probability(meta_agent)
+                self.perform_mutation(meta_agent, iteration, next_generation_population)
 
-                if random.random() <= tweak_probability:
-                    self.logger.debug("Starting mutation.")
-                    self.logger.debug(
-                        f"Agent fitness before mutation: {meta_agent.fitness}"
-                    )
-
-                    meta_agent.mutate(
-                        mean=self.mutation_mean, variance=self.mutation_variance
-                    )
-
-                    fitness_after_mutation = self.assess_and_update_fitness(
-                        meta_agent, iteration, op="Mutation"
-                    )
-
-                    self.gradient_based_trainer.train_agent(meta_agent)
-
-                    fitness_after_mutation = self.assess_and_update_fitness(
-                        meta_agent,
-                        iteration,
-                        op="Gradient-based training after Mutation",
-                    )
-
-                    self.logger.debug("Mutation Finished.")
-                    self.logger.debug(
-                        f"Agent fitness after mutation: {meta_agent.fitness}"
-                    )
-
-                    meta_agent.summary_writer_manager.write_scalar_summary(
-                        "Fitness after mutation",
-                        data=fitness_after_mutation,
-                        step=iteration,
-                    )
-
-                    next_generation_population.append(meta_agent)
-
-                else:
-                    self.logger.debug("Skipping mutation.")
-
-                # beta = self._calculate_beta(meta_agent)
-                (
-                    crossover_prob,
-                    soft_distance,
-                    soft_distance_idx,
-                ) = self.crossover_probability(
-                    meta_agent, next_generation_population[:]
+                self.perform_crossover(
+                    meta_agent, iteration, next_generation_population
                 )
 
-                if random.random() <= crossover_prob:
-                    crossover_partner = next_generation_population[:][soft_distance_idx]
-                    self.logger.debug("Performing crossover.")
-                    self.logger.debug(f"Parent 1: {meta_agent.tf_agent.name}")
-                    self.logger.debug(f"Parent 1 fitness: {meta_agent.fitness}")
-                    self.logger.debug(f"Parent 2 {crossover_partner.tf_agent.name}")
-                    self.logger.debug(f"Parent 2 fitness: {crossover_partner.fitness}")
-                    self.logger.debug(f"Parent 1 keep percentage: {crossover_prob}")
-
-                    self_keep_percentage = min(
-                        max(
-                            (
-                                1.0
-                                / (
-                                    1.0
-                                    + math.exp(
-                                        -(
-                                            meta_agent.fitness
-                                            - crossover_partner.fitness
-                                        )
-                                    )
-                                )
-                            ),
-                            0.1,
-                        ),
-                        0.9,
-                    )
-
-                    child = meta_agent.crossover(
-                        partner=crossover_partner,
-                        self_keep_percentage=self_keep_percentage,
-                    )
-                    self.assess_and_update_fitness(child, iteration, op="Crossover")
-
-                    self.gradient_based_trainer.train_agent(child)
-
-                    self.assess_and_update_fitness(
-                        child, iteration, op="Gradient-based training after Crossover"
-                    )
-
-                    child.save()
-
-                    self.logger.debug("Crossover done.")
-                    self.logger.debug(f"Child fitness: {child.fitness}")
-                    child.summary_writer_manager.write_scalar_summary(
-                        "Fitness after crossover", data=child.fitness, step=iteration
-                    )
-
-                    if meta_agent in next_generation_population:
-                        next_generation_population.remove(meta_agent)
-                    # meta_agent.checkpoint_manager.delete_checkpointer()
-                    next_generation_population.append(child)
-
-                else:
-                    self.logger.debug("Skipping crossover.")
+            # for individual in self.population:
+            #     if individual not in next_generation_population:
+            #         individual.delete()
 
             self.population = next_generation_population
             population_names = [individual.name for individual in self.population]
@@ -261,6 +167,101 @@ class PopulationBasedTraining:
         print("best_fitness: ", self.best.fitness)
 
         return self.best
+
+    def perform_crossover(self, meta_agent, iteration, next_generation_population):
+        (
+            crossover_prob,
+            soft_distance,
+            soft_distance_idx,
+        ) = self.crossover_probability(meta_agent, next_generation_population[:])
+
+        if random.random() <= crossover_prob:
+            crossover_partner = next_generation_population[:][soft_distance_idx]
+            self.logger.debug("Performing crossover.")
+            self.logger.debug(f"Parent 1: {meta_agent.tf_agent.name}")
+            self.logger.debug(f"Parent 1 fitness: {meta_agent.fitness}")
+            self.logger.debug(f"Parent 2 {crossover_partner.tf_agent.name}")
+            self.logger.debug(f"Parent 2 fitness: {crossover_partner.fitness}")
+            self.logger.debug(f"Parent 1 keep percentage: {crossover_prob}")
+
+            self_keep_percentage = min(
+                max(
+                    (
+                        1.0
+                        / (
+                            1.0
+                            + math.exp(
+                                -(meta_agent.fitness - crossover_partner.fitness)
+                            )
+                        )
+                    ),
+                    0.1,
+                ),
+                0.9,
+            )
+
+            child = meta_agent.crossover(
+                partner=crossover_partner,
+                self_keep_percentage=self_keep_percentage,
+            )
+            self.assess_and_update_fitness(child, iteration, op="Crossover")
+
+            self.gradient_based_trainer.train_agent(child)
+
+            self.assess_and_update_fitness(
+                child, iteration, op="Gradient-based training after Crossover"
+            )
+
+            # child.save()
+
+            self.logger.debug("Crossover done.")
+            self.logger.debug(f"Child fitness: {child.fitness}")
+            child.summary_writer_manager.write_scalar_summary(
+                "Fitness after crossover", data=child.fitness, step=iteration
+            )
+
+            if meta_agent in next_generation_population:
+                next_generation_population.remove(meta_agent)
+
+            next_generation_population.append(child)
+
+        else:
+            self.logger.debug("Skipping crossover.")
+
+    def perform_mutation(self, meta_agent, iteration, next_generation_population):
+        tweak_probability = self._calculate_tweak_probability(meta_agent)
+
+        if random.random() <= tweak_probability:
+            self.logger.debug("Starting mutation.")
+            self.logger.debug(f"Agent fitness before mutation: {meta_agent.fitness}")
+
+            meta_agent.mutate(mean=self.mutation_mean, variance=self.mutation_variance)
+
+            fitness_after_mutation = self.assess_and_update_fitness(
+                meta_agent, iteration, op="Mutation"
+            )
+
+            self.gradient_based_trainer.train_agent(meta_agent)
+
+            fitness_after_mutation = self.assess_and_update_fitness(
+                meta_agent,
+                iteration,
+                op="Gradient-based training after Mutation",
+            )
+
+            self.logger.debug("Mutation Finished.")
+            self.logger.debug(f"Agent fitness after mutation: {meta_agent.fitness}")
+
+            meta_agent.summary_writer_manager.write_scalar_summary(
+                "Fitness after mutation",
+                data=fitness_after_mutation,
+                step=iteration,
+            )
+
+            next_generation_population.append(meta_agent)
+
+        else:
+            self.logger.debug("Skipping mutation.")
 
     def assess_and_update_fitness(self, meta_agent, iteration, op: str = "None"):
         fitness_after_gradient_based_training = self.assess_fitness(
@@ -283,7 +284,7 @@ class PopulationBasedTraining:
         if self.best is None or (meta_agent.fitness >= self.best.fitness):
             # ToDo: Fix checkpointer
             # if self.best:
-            #     self.best.checkpoint_manager.delete_checkpointer()
+            #     self.best.delete()
 
             self.best = meta_agent.copy(name="best")
 
