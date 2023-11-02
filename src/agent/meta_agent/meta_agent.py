@@ -47,3 +47,11 @@ class MetaAgent(ABC):
     @abstractmethod
     def get_network(self) -> BaseQNetwork:
         pass
+
+    @abstractmethod
+    def save(self):
+        pass
+
+    @abstractmethod
+    def delete(self):
+        pass
