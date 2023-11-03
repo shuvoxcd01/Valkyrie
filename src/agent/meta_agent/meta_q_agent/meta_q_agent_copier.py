@@ -1,3 +1,4 @@
+import copy
 import logging
 from typing import Optional
 from Valkyrie.src.agent.meta_agent.meta_agent_copier import MetaAgentCopier
@@ -79,9 +80,11 @@ class MetaQAgentCopier(MetaAgentCopier):
         return copied_meta_agent
 
     def _clone_tf_agent(self, meta_agent, name, training_step_counter, network):
-        network = self._clone_network(meta_agent, network)
+        cloned_network = self._clone_network(meta_agent, network)
 
-        optimizer = self._clone_optimizer(meta_agent=meta_agent)
+        cloned_optimizer = self._clone_optimizer(
+            meta_agent=meta_agent, cloned_network=cloned_network
+        )
 
         if training_step_counter is None:
             training_step_counter = tf.Variable(
@@ -92,25 +95,34 @@ class MetaQAgentCopier(MetaAgentCopier):
 
         copied_tf_agent = self.agent_factory.get_agent(
             name=name,
-            network=network,
-            optimizer=optimizer,
+            network=cloned_network,
+            optimizer=cloned_optimizer,
             train_step_counter=training_step_counter,
         )
 
         return copied_tf_agent
 
-    def _clone_optimizer(self, meta_agent):
+    def _clone_optimizer(self, meta_agent, cloned_network):
         _optimizer = meta_agent.tf_agent._optimizer
 
         _optimizer_name = _optimizer._name
 
         if _optimizer_name == "Adam":
-            return tf.keras.optimizers.Adam.from_config(_optimizer.get_config())
+            cloned_optimizer = tf.keras.optimizers.Adam.from_config(
+                _optimizer.get_config()
+            )
 
         elif _optimizer_name.lower() == "rmsprop":
-            return tf.keras.optimizers.RMSprop.from_config(_optimizer.get_config())
+            cloned_optimizer = tf.keras.optimizers.RMSprop.from_config(
+                _optimizer.get_config()
+            )
 
-        raise Exception("Only RMSprop and Adam optimizers are supported.")
+        else:
+            raise Exception("Only RMSprop and Adam optimizers are supported.")
+
+        cloned_optimizer._create_all_weights(cloned_network.trainable_variables)
+
+        return cloned_optimizer
 
     def _clone_network(self, meta_agent, network):
         if network is None:
@@ -118,6 +130,10 @@ class MetaQAgentCopier(MetaAgentCopier):
 
             if isinstance(network, Network) and not isinstance(network, Sequential):
                 network.create_variables()
+
+            elif isinstance(network, Sequential):
+                input_tensor_spec = meta_agent.get_network().input_tensor_spec
+                network.create_variables(input_tensor_spec)
 
             network.set_weights(meta_agent.tf_agent._q_network.get_weights())
 
