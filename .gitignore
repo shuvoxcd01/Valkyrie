@@ -139,3 +139,6 @@ training_metadata_*
 old_training_metadata/*
 all_training_metadata/*
 *.ipynb
+
+# old training metadata
+all_training_metadata_old/*
