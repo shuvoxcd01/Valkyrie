@@ -153,9 +153,10 @@ class PopulationBasedTraining:
                     meta_agent, iteration, next_generation_population
                 )
 
-            # for individual in self.population:
-            #     if individual not in next_generation_population:
-            #         individual.delete()
+            for individual in self.population:
+                if individual not in next_generation_population:
+                    individual.delete()
+                    del individual
 
             self.population = next_generation_population
             population_names = [individual.name for individual in self.population]
@@ -292,6 +293,12 @@ class PopulationBasedTraining:
                 "Best fitness",
                 data=meta_agent.fitness,
                 step=iteration,
+            )
+
+            self.fitness_tracker.write(
+                agent=self.best,
+                operation_name=f"None",
+                fitness_value=self.best.fitness,
             )
 
     def _calculate_beta(self, meta_agent: MetaAgent):
