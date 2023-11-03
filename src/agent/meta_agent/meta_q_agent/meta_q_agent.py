@@ -63,7 +63,12 @@ class MetaQAgent(MetaAgent):
             child_network, Sequential
         ):
             child_network.create_variables()
-            child_network.set_weights(parent_1_network.get_weights())
+            
+        elif isinstance(child_network, Sequential):
+            input_tensor_spec = parent_1_network.input_tensor_spec
+            child_network.create_variables(input_tensor_spec)
+       
+        child_network.set_weights(parent_1_network.get_weights())
 
         child_crossover_layers = child_network.get_crossover_layers()
         parent_1_crossover_layers = parent_1_network.get_crossover_layers()
