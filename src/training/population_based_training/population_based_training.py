@@ -118,7 +118,6 @@ class PopulationBasedTraining:
                             data=meta_agent.fitness,
                             step=iteration,
                         )
-                        self.best.save()
                         return self.best
 
             population_sorted = sorted(
@@ -212,7 +211,7 @@ class PopulationBasedTraining:
                 child, iteration, op="Gradient-based training after Crossover"
             )
 
-            # child.save()
+            child.save()
 
             self.logger.debug("Crossover done.")
             self.logger.debug(f"Child fitness: {child.fitness}")
@@ -283,10 +282,11 @@ class PopulationBasedTraining:
     def check_and_update_best(self, meta_agent, iteration):
         if self.best is None or (meta_agent.fitness >= self.best.fitness):
             # ToDo: Fix checkpointer
-            # if self.best:
-            #     self.best.delete()
+            if self.best:
+                self.best.delete()
 
             self.best = meta_agent.copy(name="best")
+            self.best.save()
 
             self.best.summary_writer_manager.write_scalar_summary(
                 "Best fitness",

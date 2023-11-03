@@ -134,7 +134,7 @@ class GradientBasedTraining:
                     name="Average return", data=fitness
                 )
 
-                #meta_agent.save()
+                meta_agent.save()
 
                 if (
                     self.best_possible_fitness
@@ -142,6 +142,6 @@ class GradientBasedTraining:
                 ):
                     break
 
-        #meta_agent.save()
+        meta_agent.save()
 
         # self.replay_buffer_checkpoint_manager.save_checkpointer()
