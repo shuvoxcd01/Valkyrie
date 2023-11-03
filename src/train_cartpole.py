@@ -2,6 +2,16 @@ import os
 import sys
 from datetime import datetime
 import tensorflow as tf
+
+USE_GPU = True
+LOG_DEVICE_PLACEMENT = False
+
+if not USE_GPU:
+    tf.config.set_visible_devices([], "GPU")
+
+if LOG_DEVICE_PLACEMENT:
+    tf.debugging.set_log_device_placement(True)
+
 from Valkyrie.all_training_metadata import ALL_TRAINING_METADATA_DIR
 from Valkyrie.src.agent.meta_agent.meta_q_agent.meta_q_agent_factory import (
     MetaQAgentFactory,
@@ -47,13 +57,13 @@ INITIAL_LEARNING_RATE = 1e-3
 TARGET_UPDATE_PERIOD = 50  # 200
 REPLAY_BUFFER_MAX_LENGTH = 10000
 
-BATCH_SIZE = 64
+BATCH_SIZE = 32
 LOG_INTERVAL = 50  # 250
 NUM_EVAL_EPISODES = 5
 EVAL_INTERVAL = 50  # 500
 INITIAL_COLLECT_STEPS = 200
 
-POPSIZE = 4
+POPSIZE = 2
 NUM_GRADIENT_BASED_TRAINING_EPOCH = 100  # 600
 TRAINING_META_DATA_DIR = os.path.join(
     ALL_TRAINING_METADATA_DIR,

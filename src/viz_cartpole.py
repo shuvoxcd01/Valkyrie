@@ -92,14 +92,14 @@ optimizer = tf.keras.optimizers.Adam(learning_rate=INITIAL_LEARNING_RATE)
 
 train_step_counter = tf.Variable(0)
 tf_agent = agent_factory.get_agent(
-    name="g_7",
+    name="best",
     network=network,
     optimizer=optimizer,
     train_step_counter=train_step_counter,
 )
 
 agent_checkpoint_manager_factory = AgentCheckpointManagerFactory(
-    base_ckpt_dir="/home/Valkyrie/all_training_metadata/cartpole/training_metadata_cartpole_2023-11-03-10.33.56/checkpoints/g_7"
+    base_ckpt_dir="/home/Valkyrie/all_training_metadata/cartpole/training_metadata_cartpole_2023-11-03-12.00.51/checkpoints/best"
 )
 agent_checkpoint_manager = (
     agent_checkpoint_manager_factory.get_agent_checkpoint_manager(agent=tf_agent)
