@@ -44,7 +44,6 @@ class AtariQNetworkFactory(NetworkFactory):
             self.num_actions,
             activation=None,
             kernel_initializer=kernel_initializer,
-            bias_initializer=tf.keras.initializers.Constant(-0.2),
         )
 
         dense_layers = [
