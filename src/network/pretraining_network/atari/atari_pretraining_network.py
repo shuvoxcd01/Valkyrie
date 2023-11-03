@@ -28,10 +28,10 @@ class AtariPretrainingNetwork(BasePretrainingNetwork):
 
         self.observation_shape = input_tensor_spec.shape
 
+        self.encoder_last_conv_layer_out_shape = None
+
         self.encoder_network, self.encoder_layers = self._build_encoder()
         self.decoder_network = self._build_decoder()
-
-        self.encoder_last_conv_layer_out_shape = None
 
     def get_encoder_layers(self):
         return self.encoder_layers
@@ -40,10 +40,13 @@ class AtariPretrainingNetwork(BasePretrainingNetwork):
         encoder_layers = [
             tf.keras.layers.Input(shape=self.observation_shape),
             tf.keras.layers.Conv2D(
-                16, (3, 3), activation="relu", padding="same", strides=2
+                32, (8, 8), strides=3, activation="relu", padding="same"
             ),
             tf.keras.layers.Conv2D(
-                8, (3, 3), activation="relu", padding="same", strides=2
+                64, (4, 4), strides=2, activation="relu", padding="same"
+            ),
+            tf.keras.layers.Conv2D(
+                64, (3, 3), strides=1, activation="relu", padding="same"
             ),
         ]
         encoder_network = tf.keras.Sequential(encoder_layers)
@@ -60,10 +63,13 @@ class AtariPretrainingNetwork(BasePretrainingNetwork):
                     target_shape=self.encoder_last_conv_layer_out_shape
                 ),
                 tf.keras.layers.Conv2DTranspose(
-                    8, kernel_size=3, strides=2, activation="relu", padding="same"
+                    64, kernel_size=3, strides=1, activation="relu", padding="same"
                 ),
                 tf.keras.layers.Conv2DTranspose(
-                    16, kernel_size=3, strides=2, activation="relu", padding="same"
+                    64, kernel_size=4, strides=2, activation="relu", padding="same"
+                ),
+                tf.keras.layers.Conv2DTranspose(
+                    32, kernel_size=8, strides=3, activation="relu", padding="same"
                 ),
                 tf.keras.layers.Conv2D(
                     self.observation_shape[-1],
