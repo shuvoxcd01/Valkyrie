@@ -287,6 +287,22 @@ class PopulationBasedTraining:
                 self.best.delete()
 
             self.best = meta_agent.copy(name="best")
+
+            verify_meta_fitness = self.assess_fitness(meta_agent=meta_agent)
+
+            verify_best_fitness = self.assess_fitness(self.best)
+
+            self.fitness_tracker.write(
+                agent=meta_agent,
+                operation_name=f"Verify-meta",
+                fitness_value=verify_meta_fitness,
+            )
+            self.fitness_tracker.write(
+                agent=self.best,
+                operation_name=f"Verify-best",
+                fitness_value=verify_best_fitness,
+            )
+
             self.best.save()
 
             self.best.summary_writer_manager.write_scalar_summary(
