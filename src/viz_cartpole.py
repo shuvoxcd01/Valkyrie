@@ -1,4 +1,5 @@
 import tensorflow as tf
+from Valkyrie.src.fitness_evaluator.fitness_evaluator import FitnessEvaluator
 
 # tf.config.set_visible_devices([], "GPU")
 # tf.debugging.set_log_device_placement(True)
@@ -99,7 +100,7 @@ tf_agent = agent_factory.get_agent(
 )
 
 agent_checkpoint_manager_factory = AgentCheckpointManagerFactory(
-    base_ckpt_dir="/home/Valkyrie/all_training_metadata/cartpole/training_metadata_cartpole_2023-11-03-12.00.51/checkpoints/best"
+    base_ckpt_dir="/home/Valkyrie/all_training_metadata/cartpole/training_metadata_cartpole_2023-11-04-04.40.00/checkpoints/best"
 )
 agent_checkpoint_manager = (
     agent_checkpoint_manager_factory.get_agent_checkpoint_manager(agent=tf_agent)
@@ -119,5 +120,11 @@ for _ in range(10):
         time_step = eval_env.step(action_step.action)
         eval_py_env.render()
         print(i)
-        i+=1
+        i += 1
         # print(eval_py_env.render())
+
+
+fitness_evaluator = FitnessEvaluator(environment=eval_env)
+fitness = fitness_evaluator.evaluate_fitness(tf_agent.policy)
+
+print("Fitness: ", fitness)
