@@ -77,7 +77,7 @@ class Pretraining:
         self.logger.info("Starting pretraining ...")
         self.running_network.trainable = True
         self.running_network.compile(optimizer=self.optimizer, loss=self.loss_fn)
-        self._train()
+        self._train(agents_to_sync=agents_to_sync)
         self.running_network.trainable = False
         self.logger.info("Pretraining done...")
 
