@@ -100,7 +100,7 @@ tf_agent = agent_factory.get_agent(
 )
 
 agent_checkpoint_manager_factory = AgentCheckpointManagerFactory(
-    base_ckpt_dir="/home/Valkyrie/all_training_metadata/cartpole/training_metadata_cartpole_2023-11-04-04.40.00/checkpoints/best"
+    base_ckpt_dir="/home/Valkyrie/all_training_metadata/cartpole/training_metadata_cartpole_2023-11-04-06.52.42/checkpoints/best"
 )
 agent_checkpoint_manager = (
     agent_checkpoint_manager_factory.get_agent_checkpoint_manager(agent=tf_agent)

@@ -12,6 +12,9 @@ from Valkyrie.src.network.agent_network.q_networks.atari.atari_q_network_factory
 from Valkyrie.src.network.pretraining_network.atari.atari_pretraining_network import (
     AtariPretrainingNetwork,
 )
+from Valkyrie.src.replay_buffer.unified_replay_buffer.unified_reverb_replay_buffer_manager import (
+    UnifiedReverbReplayBufferManager,
+)
 from Valkyrie.src.training.pretraining.pretraining import Pretraining
 from parent_tracker.parent_tracker import ParentTracker
 from fitness_tracker.fitness_tracker import FitnessTracker
@@ -78,7 +81,7 @@ if not os.path.exists(TRAINING_META_DATA_DIR):
 LOG_FILE_PATH = os.path.join(TRAINING_META_DATA_DIR, "logs.log")
 
 BEST_POSSIBLE_FITNESS = 21
-MAX_COLLECT_STEPS = 100
+MAX_COLLECT_STEPS = 10
 MAX_COLLECT_EPISODES = None
 Q_NETWORK_INITIALIZERS = [tf.keras.initializers.Zeros(), None]
 
@@ -93,14 +96,12 @@ DECODER_FC_LAYER_PARAMS = (128, 256, 512)
 
 NUM_PRETRAINING_ITERATION = 1000
 PRETRAINING_BATCH_SIZE = BATCH_SIZE
-PRETRAINING_REPLAY_BUFFER_TABLE_NAME = "PRETRAIN"
 
 # Replay Buffer Params
 REPLAY_BUFFER_NUM_PARALLEL_CALLS = 2
 REPLAY_BUFFER_BATCH_SIZE = BATCH_SIZE
 REPLAY_BUFFER_NUM_STEPS = 2
 REPLAY_BUFFER_NUM_PREFETCH = 3
-REPLAY_BUFFER_TABLE_NAMES = [PRETRAINING_REPLAY_BUFFER_TABLE_NAME]
 
 logging.basicConfig(level=logging.DEBUG)
 logger = logging.getLogger()
@@ -203,7 +204,6 @@ for i in range(POPSIZE):
         agent_copier=meta_agent_copier,
     )
     initial_population.append(meta_agent)
-    REPLAY_BUFFER_TABLE_NAMES.append(meta_agent.name)
 
 
 fitness_evaluator = FitnessEvaluator(
@@ -212,24 +212,18 @@ fitness_evaluator = FitnessEvaluator(
 
 collect_data_spec = tf_agent.collect_data_spec
 
-replay_buffer_manager = ReverbReplayBufferManager(
-    data_spec=collect_data_spec,
-    replay_buffer_capacity=REPLAY_BUFFER_MAX_LENGTH,
-    num_parallel_calls=REPLAY_BUFFER_NUM_PARALLEL_CALLS,
-    batch_size=REPLAY_BUFFER_BATCH_SIZE,
-    num_steps=REPLAY_BUFFER_NUM_STEPS,
-    num_prefetch=REPLAY_BUFFER_NUM_PREFETCH,
-    table_names=REPLAY_BUFFER_TABLE_NAMES,
+replay_buffer_manager = UnifiedReverbReplayBufferManager(
+    data_spec=collect_data_spec, replay_buffer_capacity=REPLAY_BUFFER_MAX_LENGTH
 )
 
-# replay_buffer_checkpoint_manager = ReplayBufferCheckpointManager(
-#     base_ckpt_dir=CHECKPOINT_BASE_DIR,
-#     replay_buffer=replay_buffer_manager.get_replay_buffer(),
-# )
+replay_buffer_checkpoint_manager = ReplayBufferCheckpointManager(
+    base_ckpt_dir=CHECKPOINT_BASE_DIR,
+    replay_buffer=replay_buffer_manager.get_replay_buffer(),
+)
 
-replay_buffer_observers = replay_buffer_manager.get_all_observers()
+replay_buffer_observer = replay_buffer_manager.get_observer()
 collect_driver_factory = PyDriverFactory(
-    common_observers=[replay_buffer_manager.get_observer("PRETRAIN")]
+    env=train_py_env, observers=[replay_buffer_observer]
 )
 
 
@@ -237,17 +231,15 @@ random_policy = random_py_policy.RandomPyPolicy(
     time_step_spec=time_step_spec, action_spec=action_spec
 )
 
-initial_collect_driver = collect_driver_factory._get_driver(
-    env=train_py_env,
+initial_collect_driver = collect_driver_factory.get_driver(
     policy=random_policy,
-    observers=replay_buffer_observers,
     max_steps=INITIAL_COLLECT_STEPS,
 )
 
 gradient_based_trainer = GradientBasedTraining(
     train_env=train_py_env,
     replay_buffer_manager=replay_buffer_manager,
-    # replay_buffer_checkpoint_manager=replay_buffer_checkpoint_manager,
+    replay_buffer_checkpoint_manager=replay_buffer_checkpoint_manager,
     initial_collect_driver=initial_collect_driver,
     fitness_evaluator=fitness_evaluator,
     num_train_iteration=NUM_GRADIENT_BASED_TRAINING_EPOCH,
@@ -272,7 +264,6 @@ pretriner = Pretraining(
     # replay_buffer_checkpoint_manager=
     num_iteration=NUM_PRETRAINING_ITERATION,
     batch_size=PRETRAINING_BATCH_SIZE,
-    replay_buffer_table_name=PRETRAINING_REPLAY_BUFFER_TABLE_NAME,
     tf_summary_base_dir=SUMMARY_BASE_DIR,
     tau=0.125,
     stable_network_update_period=500,
@@ -287,7 +278,6 @@ population_based_training = PopulationBasedTraining(
     fitness_trakcer=fitness_tracker,
     parent_tracker=parent_tracker,
     best_possible_fitness=BEST_POSSIBLE_FITNESS,
-    replay_buffer_manager=replay_buffer_manager,
     num_training_iterations=10,
 )
 

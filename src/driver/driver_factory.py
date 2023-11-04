@@ -4,26 +4,14 @@ from tf_agents.environments import PyEnvironment, TFEnvironment
 
 
 class DriverFactory(ABC):
-    def __init__(self, common_observers: Optional[List] = None) -> None:
-        self.common_observers = common_observers
-
-    def get_driver(
-        self,
-        env: Union[PyEnvironment, TFEnvironment],
-        observers: List,
-        policy,
-        max_steps: int,
-    ):
-        if self.common_observers:
-            observers += self.common_observers
-        observers = list(set(observers))
-
-        return self._get_driver(
-            env=env, observers=observers, policy=policy, max_steps=max_steps
-        )
+    def __init__(
+        self, env: Union[PyEnvironment, TFEnvironment], observers: List
+    ) -> None:
+        self.env = env
+        self.observers = observers
 
     @abstractmethod
-    def _get_driver(
+    def get_driver(
         self,
         env: Union[PyEnvironment, TFEnvironment],
         observers: List,

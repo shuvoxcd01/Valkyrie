@@ -11,7 +11,6 @@ from training.gradient_based_training.gradient_based_training import (
     GradientBasedTraining,
 )
 import tensorflow as tf
-from replay_buffer.replay_buffer_manager import ReplayBufferManager
 import math
 import numpy as np
 
@@ -25,7 +24,6 @@ class PopulationBasedTraining:
         fitness_evaluator: FitnessEvaluator,
         fitness_trakcer: FitnessTracker,
         parent_tracker: ParentTracker,
-        replay_buffer_manager: ReplayBufferManager,
         num_individuals: Optional[int] = None,
         best_possible_fitness: Optional[int] = None,
         num_training_iterations: int = 1000,
@@ -54,7 +52,6 @@ class PopulationBasedTraining:
         self.generated_agent_count = generated_agent_count
         self.mutation_mean = mutation_mean
         self.mutation_variance = mutation_variance
-        self.replay_buffer_manager = replay_buffer_manager
 
     def assess_fitness(self, meta_agent: MetaAgent) -> float:
         policy = meta_agent.tf_agent.policy
@@ -161,8 +158,8 @@ class PopulationBasedTraining:
             self.population = next_generation_population
             population_names = [individual.name for individual in self.population]
             self.logger.info(f"Next generation population names: {population_names}")
-            self.replay_buffer_manager.update_keep_only(population_names)
-            self.logger.info("Replay buffer updated.")
+            # self.replay_buffer_manager.update_keep_only(population_names)
+            # self.logger.info("Replay buffer updated.")
 
         print("best_fitness: ", self.best.fitness)
 

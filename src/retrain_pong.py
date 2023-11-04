@@ -166,7 +166,7 @@ random_policy = random_py_policy.RandomPyPolicy(
     action_spec=action_spec
 )
 
-initial_collect_driver = collect_driver_factory._get_driver(
+initial_collect_driver = collect_driver_factory.get_driver(
     policy=random_policy, max_steps=INITIAL_COLLECT_STEPS)
 
 gradient_based_trainer = GradientBasedTraining(

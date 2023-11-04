@@ -14,17 +14,20 @@ from Valkyrie.src.replay_buffer.replay_buffer_manager import ReplayBufferManager
 import logging
 import os
 
+from Valkyrie.src.replay_buffer.unified_replay_buffer.unified_replay_buffer_manager import (
+    UnifiedReplayBufferManager,
+)
+
 
 class Pretraining:
     def __init__(
         self,
         running_pretraining_network: BasePretrainingNetwork,
         stable_pretraining_network: BasePretrainingNetwork,
-        replay_buffer_manager: ReplayBufferManager,
+        replay_buffer_manager: UnifiedReplayBufferManager,
         optimizer: tf.keras.optimizers.Optimizer,
         num_iteration: int,
         batch_size: int,
-        replay_buffer_table_name: str,
         tf_summary_base_dir: str,
         tau: float = 0.5,
         stable_network_update_period=500,
@@ -36,7 +39,6 @@ class Pretraining:
         self.loss_fn = losses.MeanSquaredError()
         self.num_iteration = num_iteration
         self.batch_size = batch_size
-        self.replay_buffer_table_name = replay_buffer_table_name
         self.summary_witer_dir = os.path.join(tf_summary_base_dir, "pretraining")
         self.tau = tau
         self.stable_network_update_period = stable_network_update_period
@@ -57,7 +59,6 @@ class Pretraining:
 
     def _initialize(self):
         iterator = self.replay_buffer_manager.get_observation_iterator(
-            table_name=self.replay_buffer_table_name,
             num_parallel_calls=3,
             batch_size=self.batch_size,
             num_steps=1,
@@ -77,7 +78,9 @@ class Pretraining:
         self.logger.info("Starting pretraining ...")
         self.running_network.trainable = True
         self.running_network.compile(optimizer=self.optimizer, loss=self.loss_fn)
+
         self._train(agents_to_sync=agents_to_sync)
+
         self.running_network.trainable = False
         self.logger.info("Pretraining done...")
 
@@ -93,7 +96,6 @@ class Pretraining:
             assert self.sanity_check(self.running_network.get_weights())
 
         iterator = self.replay_buffer_manager.get_observation_iterator(
-            table_name=self.replay_buffer_table_name,
             num_parallel_calls=3,
             batch_size=self.batch_size,
             num_steps=1,

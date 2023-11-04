@@ -7,33 +7,16 @@ import logging
 
 
 class PyDriverFactory(DriverFactory):
-    def __init__(self, common_observers: Optional[List]) -> None:
-        super().__init__(common_observers=common_observers)
-        self.logger = logging.getLogger(__file__)
+    def __init__(self, env: PyEnvironment, observers: List) -> None:
+        super().__init__(env, observers)
 
-    def _get_driver(
-        self,
-        env: PyEnvironment,
-        observers: List,
-        policy: py_policy.PyPolicy,
-        max_steps: int,
-        **kwargs,
-    ):
+    def get_driver(self, policy: py_policy.PyPolicy, max_steps: int, **kwargs):
         max_episodes = kwargs.get("max_episodes", 1)
 
-        self.logger.info(
-            f"""Creating dynamic step driver with the following params: 
-            env:{env}, 
-            observers: {observers}, 
-            policy: {policy}, 
-            max_steps: {max_steps},
-            max_episodes: {max_episodes}"""
-        )
-
         return py_driver.PyDriver(
-            env=env,
+            env=self.env,
             policy=policy,
-            observers=observers,
+            observers=self.observers,
             max_steps=max_steps,
             max_episodes=max_episodes,
         )
