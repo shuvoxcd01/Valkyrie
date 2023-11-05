@@ -31,6 +31,7 @@ class PopulationBasedTraining:
         generated_agent_count: int = 0,
         mutation_mean=0.0,
         mutation_variance=0.0001,
+        perform_pretraining=True,
     ) -> None:
         self.population = initial_population
         self.num_individuals = (
@@ -52,6 +53,7 @@ class PopulationBasedTraining:
         self.generated_agent_count = generated_agent_count
         self.mutation_mean = mutation_mean
         self.mutation_variance = mutation_variance
+        self.perform_pretraining = perform_pretraining
 
     def assess_fitness(self, meta_agent: MetaAgent) -> float:
         policy = meta_agent.tf_agent.policy
@@ -79,7 +81,9 @@ class PopulationBasedTraining:
 
         for iteration in range(self.num_training_iterations):
             assert self.sanity_check(self.population), "Sanity check failed."
-            self.pretrainer.train(agents_to_sync=self.population)
+
+            if self.perform_pretraining:
+                self.pretrainer.train(agents_to_sync=self.population)
 
             for meta_agent in self.population:
                 meta_agent.generation += 1
@@ -158,8 +162,6 @@ class PopulationBasedTraining:
             self.population = next_generation_population
             population_names = [individual.name for individual in self.population]
             self.logger.info(f"Next generation population names: {population_names}")
-            # self.replay_buffer_manager.update_keep_only(population_names)
-            # self.logger.info("Replay buffer updated.")
 
         print("best_fitness: ", self.best.fitness)
 
@@ -285,20 +287,20 @@ class PopulationBasedTraining:
 
             self.best = meta_agent.copy(name="best")
 
-            verify_meta_fitness = self.assess_fitness(meta_agent=meta_agent)
+            # verify_meta_fitness = self.assess_fitness(meta_agent=meta_agent)
 
-            verify_best_fitness = self.assess_fitness(self.best)
+            # verify_best_fitness = self.assess_fitness(self.best)
 
-            self.fitness_tracker.write(
-                agent=meta_agent,
-                operation_name=f"Verify-meta",
-                fitness_value=verify_meta_fitness,
-            )
-            self.fitness_tracker.write(
-                agent=self.best,
-                operation_name=f"Verify-best",
-                fitness_value=verify_best_fitness,
-            )
+            # self.fitness_tracker.write(
+            #     agent=meta_agent,
+            #     operation_name=f"Verify-meta",
+            #     fitness_value=verify_meta_fitness,
+            # )
+            # self.fitness_tracker.write(
+            #     agent=self.best,
+            #     operation_name=f"Verify-best",
+            #     fitness_value=verify_best_fitness,
+            # )
 
             self.best.save()
 

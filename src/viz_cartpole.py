@@ -63,6 +63,7 @@ cartpole_pretraining_network = CartPolePretrainingNetwork(
     decoder_fc_layer_params=DECODER_FC_LAYER_PARAMS,
 )
 
+
 network_factory = CartPoleQNetworkFactory(
     pretraining_network=cartpole_pretraining_network,
     input_tensor_spec=observation_spec,
@@ -100,7 +101,7 @@ tf_agent = agent_factory.get_agent(
 )
 
 agent_checkpoint_manager_factory = AgentCheckpointManagerFactory(
-    base_ckpt_dir="/home/Valkyrie/all_training_metadata/cartpole/training_metadata_cartpole_2023-11-04-06.52.42/checkpoints/best"
+    base_ckpt_dir="/home/Valkyrie/all_training_metadata/cartpole/training_metadata_cartpole_2023-11-04-09.51.19/checkpoints/"
 )
 agent_checkpoint_manager = (
     agent_checkpoint_manager_factory.get_agent_checkpoint_manager(agent=tf_agent)
@@ -108,10 +109,11 @@ agent_checkpoint_manager = (
 
 agent_checkpoint_manager.create_or_initialize_checkpointer()
 
+
 tf_agent._q_network.summary()
 
 
-for _ in range(10):
+for _ in range(2):
     print("============================")
     i = 1
     time_step = eval_env.reset()

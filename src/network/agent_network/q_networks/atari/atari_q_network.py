@@ -14,7 +14,7 @@ from Valkyrie.src.network.pretraining_network.atari.atari_pretraining_network im
 class AtariQNetwork(BaseQNetwork, sequential.Sequential):
     def __init__(
         self,
-        pretraining_network,
+        pretraining_network, #encoder only
         layers: Sequence[tf.keras.layers.Layer],
         input_spec=None,
         name: Optional[Text] = None,
@@ -27,7 +27,7 @@ class AtariQNetwork(BaseQNetwork, sequential.Sequential):
 
     def call(self, inputs, network_state=..., **kwargs):
         inputs = tf.cast(inputs, tf.float32)
-        inputs = inputs / 255
+        inputs = inputs / 255.0
 
         # _shape = observation.shape
         # if _shape == tf.TensorShape([1, 21, 21, 8]):

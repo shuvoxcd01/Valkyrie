@@ -91,7 +91,7 @@ class AtariPretrainingNetwork(BasePretrainingNetwork):
         x = tf.reshape(tensor=x, shape=[batch * step, _shape[2], _shape[3], _shape[4]])
 
         x = tf.cast(x, tf.float32)
-        x = x / 25
+        x = x / 255.0
 
         encoded = self.encoder_network(x)
         decoded = self.decoder_network(encoded)

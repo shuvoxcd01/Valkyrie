@@ -2,6 +2,9 @@ from tf_agents.drivers.driver import Driver
 from typing import List, Optional, Union
 import tensorflow as tf
 from Valkyrie.src.agent.meta_agent.meta_agent import MetaAgent
+from Valkyrie.src.checkpoint_manager.pretraining_encoder_decoder_network_checkpoint_manager import (
+    PretrainingNetworkCheckpointManager,
+)
 from Valkyrie.src.checkpoint_manager.replay_buffer_checkpoint_manager import (
     ReplayBufferCheckpointManager,
 )
@@ -29,6 +32,7 @@ class Pretraining:
         num_iteration: int,
         batch_size: int,
         tf_summary_base_dir: str,
+        stable_network_checkpoint_manager: PretrainingNetworkCheckpointManager,
         tau: float = 0.5,
         stable_network_update_period=500,
     ) -> None:
@@ -43,6 +47,9 @@ class Pretraining:
         self.tau = tau
         self.stable_network_update_period = stable_network_update_period
         self.train_iter_counter = 0
+
+        self.stable_network_checkpoint_manager = stable_network_checkpoint_manager
+        self.stable_network_checkpoint_manager.create_or_initialize_checkpointer()
 
         if not os.path.exists(self.summary_witer_dir):
             os.makedirs(self.summary_witer_dir)
@@ -104,14 +111,16 @@ class Pretraining:
 
         for _ in range(self.num_iteration):
             training_data = next(iterator)
+            training_data = tf.cast(training_data, tf.float32)
+
+            X = training_data
+            Y = training_data / 255.0
 
             self.running_network.fit(
-                training_data,
-                training_data,
+                X,
+                Y,
                 epochs=1,
-                callbacks=[
-                    self.summary_writer_callback,
-                ],
+                callbacks=[self.summary_writer_callback],
             )
             self.train_iter_counter += 1
 
@@ -143,6 +152,8 @@ class Pretraining:
                 updated_weights_list.append(updated_weights)
 
             stable_layer.set_weights(updated_weights_list)
+
+        self.stable_network_checkpoint_manager.save_checkpointer()
 
     def sanity_check(self, current_weights):
         _sum = 0.0

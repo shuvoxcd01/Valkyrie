@@ -6,6 +6,9 @@ from Valkyrie.all_training_metadata import ALL_TRAINING_METADATA_DIR
 from Valkyrie.src.agent.meta_agent.meta_q_agent.meta_q_agent_factory import (
     MetaQAgentFactory,
 )
+from Valkyrie.src.checkpoint_manager.pretraining_encoder_decoder_network_checkpoint_manager import (
+    PretrainingNetworkCheckpointManager,
+)
 from Valkyrie.src.network.agent_network.q_networks.atari.atari_q_network_factory import (
     AtariQNetworkFactory,
 )
@@ -47,7 +50,7 @@ FC_LAYER_PARAMS = (256, 128, 64)
 CONV_LAYER_PARAMS = ((32, (8, 8), 4), (64, (4, 4), 2), (64, (3, 3), 1))
 INITIAL_LEARNING_RATE = 2.5e-3  # 1e-3
 TARGET_UPDATE_PERIOD = 100  # 200
-REPLAY_BUFFER_MAX_LENGTH = 5000
+REPLAY_BUFFER_MAX_LENGTH = 10000
 
 BATCH_SIZE = 64
 LOG_INTERVAL = 250  # 250
@@ -94,7 +97,7 @@ assert (
 ENCODER_FC_LAYER_PARAMS = (512, 256, 128, 64)
 DECODER_FC_LAYER_PARAMS = (128, 256, 512)
 
-NUM_PRETRAINING_ITERATION = 1000
+NUM_PRETRAINING_ITERATION = 500
 PRETRAINING_BATCH_SIZE = BATCH_SIZE
 
 # Replay Buffer Params
@@ -134,6 +137,10 @@ stable_pretraining_network = AtariPretrainingNetwork(
     decoder_fc_layer_params=DECODER_FC_LAYER_PARAMS,
     encoder_conv_layer_params=None,
     decoder_conv_layer_params=None,
+)
+
+stable_network_checkpoint_manager = PretrainingNetworkCheckpointManager(
+    base_ckpt_dir=CHECKPOINT_BASE_DIR, pretraining_network=stable_pretraining_network
 )
 
 
@@ -260,13 +267,13 @@ pretriner = Pretraining(
     running_pretraining_network=running_pretraining_network,
     stable_pretraining_network=stable_pretraining_network,
     replay_buffer_manager=replay_buffer_manager,
-    optimizer=tf.keras.optimizers.Adam(learning_rate=INITIAL_LEARNING_RATE, decay=0.95),
-    # replay_buffer_checkpoint_manager=
+    optimizer=tf.keras.optimizers.Adam(learning_rate=INITIAL_LEARNING_RATE),
     num_iteration=NUM_PRETRAINING_ITERATION,
     batch_size=PRETRAINING_BATCH_SIZE,
     tf_summary_base_dir=SUMMARY_BASE_DIR,
     tau=0.125,
     stable_network_update_period=500,
+    stable_network_checkpoint_manager=stable_network_checkpoint_manager,
 )
 
 
@@ -278,7 +285,6 @@ population_based_training = PopulationBasedTraining(
     fitness_trakcer=fitness_tracker,
     parent_tracker=parent_tracker,
     best_possible_fitness=BEST_POSSIBLE_FITNESS,
-    num_training_iterations=10,
 )
 
 population_based_training.train()
