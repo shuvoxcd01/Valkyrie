@@ -1,15 +1,22 @@
 from abc import ABC, abstractmethod
 from tf_agents.drivers.driver import Driver
 from tf_agents.agents import TFAgent
+from Valkyrie.src.network.agent_network.q_networks.base_q_network import BaseQNetwork
 from summary_writer.summary_writer_manager import SummaryWriterManager
 from checkpoint_manager.agent_checkpoint_manager import AgentCheckpointManager
 
 
 class MetaAgent(ABC):
-    def __init__(self, tf_agent: TFAgent, checkpoint_manager: AgentCheckpointManager,
-                 summary_writer_manager: SummaryWriterManager,
-                 fitness=0, previous_fitness=0,
-                 generation: int = 0, name=None) -> None:
+    def __init__(
+        self,
+        tf_agent: TFAgent,
+        checkpoint_manager: AgentCheckpointManager,
+        summary_writer_manager: SummaryWriterManager,
+        fitness=0,
+        previous_fitness=0,
+        generation: int = 0,
+        name=None,
+    ) -> None:
         self.tf_agent = tf_agent
         self.checkpoint_manager = checkpoint_manager
         self.summary_writer_manager = summary_writer_manager
@@ -28,15 +35,23 @@ class MetaAgent(ABC):
     @abstractmethod
     def mutate(self, mean: float, variance: float):
         pass
-    
+
     @abstractmethod
     def crossover(self, partner, self_keep_percentage):
         pass
-    
+
     @abstractmethod
     def copy(self):
         pass
 
     @abstractmethod
-    def get_network(self):
+    def get_network(self) -> BaseQNetwork:
+        pass
+
+    @abstractmethod
+    def save(self):
+        pass
+
+    @abstractmethod
+    def delete(self):
         pass

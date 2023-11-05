@@ -2,6 +2,20 @@ import os
 import sys
 from datetime import datetime
 import tensorflow as tf
+
+from Valkyrie.src.replay_buffer.unified_replay_buffer.unified_reverb_replay_buffer_manager import (
+    UnifiedReverbReplayBufferManager,
+)
+
+USE_GPU = True
+LOG_DEVICE_PLACEMENT = False
+
+if not USE_GPU:
+    tf.config.set_visible_devices([], "GPU")
+
+if LOG_DEVICE_PLACEMENT:
+    tf.debugging.set_log_device_placement(True)
+
 from Valkyrie.all_training_metadata import ALL_TRAINING_METADATA_DIR
 from Valkyrie.src.agent.meta_agent.meta_q_agent.meta_q_agent_factory import (
     MetaQAgentFactory,
@@ -29,7 +43,6 @@ from fitness_evaluator.fitness_evaluator import FitnessEvaluator
 from checkpoint_manager.replay_buffer_checkpoint_manager import (
     ReplayBufferCheckpointManager,
 )
-from replay_buffer.reverb_replay_buffer_manager import ReverbReplayBufferManager
 from training.gradient_based_training.gradient_based_training import (
     GradientBasedTraining,
 )
@@ -41,20 +54,20 @@ import logging
 from tf_agents.policies import random_py_policy
 
 
-FC_LAYER_PARAMS = (512,)
+FC_LAYER_PARAMS = (512, 256, 128, 64)
 CONV_LAYER_PARAMS = ((32, (8, 8), 4), (64, (4, 4), 2), (64, (3, 3), 1))
 INITIAL_LEARNING_RATE = 1e-3
-TARGET_UPDATE_PERIOD = 25  # 200
-REPLAY_BUFFER_MAX_LENGTH = 1000
+TARGET_UPDATE_PERIOD = 50  # 200
+REPLAY_BUFFER_MAX_LENGTH = 10000
 
-BATCH_SIZE = 32  # 64
-LOG_INTERVAL = 5  # 20  # 250
+BATCH_SIZE = 32
+LOG_INTERVAL = 50  # 250
 NUM_EVAL_EPISODES = 5
-EVAL_INTERVAL = 10  # 50  # 500
-INITIAL_COLLECT_STEPS = 100  # 200
+EVAL_INTERVAL = 50  # 500
+INITIAL_COLLECT_STEPS = 200
 
-POPSIZE = 4
-NUM_GRADIENT_BASED_TRAINING_EPOCH = 100
+POPSIZE = 2
+NUM_GRADIENT_BASED_TRAINING_EPOCH = 100  # 600
 TRAINING_META_DATA_DIR = os.path.join(
     ALL_TRAINING_METADATA_DIR,
     "cartpole",
@@ -79,20 +92,21 @@ if not os.path.exists(TRAINING_META_DATA_DIR):
 LOG_FILE_PATH = os.path.join(TRAINING_META_DATA_DIR, "logs.log")
 
 BEST_POSSIBLE_FITNESS = 200
-MAX_COLLECT_STEPS = 50
+MAX_COLLECT_STEPS = 10
 MAX_COLLECT_EPISODES = None
 
 # Pretraining Params
-NUM_PRETRAINING_ITERATION = 150
+ENCODER_FC_LAYER_PARAMS = (512, 256, 128, 64)
+DECODER_FC_LAYER_PARAMS = (128, 256, 512)
+
+NUM_PRETRAINING_ITERATION = 100
 PRETRAINING_BATCH_SIZE = BATCH_SIZE
-PRETRAINING_REPLAY_BUFFER_TABLE_NAME = "PRETRAIN"
 
 # Replay Buffer Params
 REPLAY_BUFFER_NUM_PARALLEL_CALLS = 2
 REPLAY_BUFFER_BATCH_SIZE = BATCH_SIZE
 REPLAY_BUFFER_NUM_STEPS = 2
 REPLAY_BUFFER_NUM_PREFETCH = 3
-REPLAY_BUFFER_TABLE_NAMES = [PRETRAINING_REPLAY_BUFFER_TABLE_NAME]
 
 
 logging.basicConfig(level=logging.DEBUG)
@@ -122,20 +136,21 @@ time_step_spec = train_env.time_step_spec()
 
 cartpole_pretraining_network = CartPolePretrainingNetwork(
     input_tensor_spec=train_env_observation_spec,
-    conv_layer_params=CONV_LAYER_PARAMS,
-    fc_layer_params=FC_LAYER_PARAMS,
+    encoder_fc_layer_params=FC_LAYER_PARAMS,
+    decoder_fc_layer_params=DECODER_FC_LAYER_PARAMS,
 )
 
 running_cartpole_pretraining_network = CartPolePretrainingNetwork(
     input_tensor_spec=train_env_observation_spec,
-    conv_layer_params=CONV_LAYER_PARAMS,
-    fc_layer_params=FC_LAYER_PARAMS,
+    encoder_fc_layer_params=FC_LAYER_PARAMS,
+    decoder_fc_layer_params=DECODER_FC_LAYER_PARAMS,
 )
 
 network_factory = CartPoleQNetworkFactory(
     input_tensor_spec=train_env_observation_spec,
     action_spec=action_spec,
     pretraining_network=cartpole_pretraining_network,
+    fc_layer_params=FC_LAYER_PARAMS,
 )
 
 
@@ -163,14 +178,7 @@ meta_agent_copier = MetaQAgentCopier(
 
 for i in range(POPSIZE):
     network = network_factory.get_network()
-
-    optimizer = tf.compat.v1.train.RMSPropOptimizer(
-        learning_rate=INITIAL_LEARNING_RATE,
-        decay=0.95,
-        momentum=0.0,
-        epsilon=0.00001,
-        centered=True,
-    )
+    optimizer = tf.keras.optimizers.Adam()
 
     train_step_counter = tf.Variable(0)
     tf_agent = agent_factory.get_agent(
@@ -194,7 +202,6 @@ for i in range(POPSIZE):
         agent_copier=meta_agent_copier,
     )
     initial_population.append(meta_agent)
-    REPLAY_BUFFER_TABLE_NAMES.append(meta_agent.name)
 
 
 fitness_evaluator = FitnessEvaluator(
@@ -203,24 +210,19 @@ fitness_evaluator = FitnessEvaluator(
 
 collect_data_spec = tf_agent.collect_data_spec
 
-replay_buffer_manager = ReverbReplayBufferManager(
+replay_buffer_manager = UnifiedReverbReplayBufferManager(
     data_spec=collect_data_spec,
     replay_buffer_capacity=REPLAY_BUFFER_MAX_LENGTH,
-    num_parallel_calls=REPLAY_BUFFER_NUM_PARALLEL_CALLS,
-    batch_size=REPLAY_BUFFER_BATCH_SIZE,
-    num_steps=REPLAY_BUFFER_NUM_STEPS,
-    num_prefetch=REPLAY_BUFFER_NUM_PREFETCH,
-    table_names=REPLAY_BUFFER_TABLE_NAMES,
 )
 
-# replay_buffer_checkpoint_manager = ReplayBufferCheckpointManager(
-#     base_ckpt_dir=CHECKPOINT_BASE_DIR,
-#     replay_buffer=replay_buffer_manager.get_replay_buffer(),
-# )
+replay_buffer_checkpoint_manager = ReplayBufferCheckpointManager(
+    base_ckpt_dir=CHECKPOINT_BASE_DIR,
+    replay_buffer=replay_buffer_manager.get_replay_buffer(),
+)
 
-replay_buffer_observers = replay_buffer_manager.get_all_observers()
+replay_buffer_observer = replay_buffer_manager.get_observer()
 collect_driver_factory = PyDriverFactory(
-    common_observers=[replay_buffer_manager.get_observer("PRETRAIN")]
+    env=train_py_env, observers=[replay_buffer_observer]
 )
 
 
@@ -228,9 +230,7 @@ random_policy = random_py_policy.RandomPyPolicy(
     time_step_spec=time_step_spec, action_spec=action_spec
 )
 
-initial_collect_driver = collect_driver_factory._get_driver(
-    env=train_py_env,
-    observers=replay_buffer_observers,
+initial_collect_driver = collect_driver_factory.get_driver(
     policy=random_policy,
     max_steps=INITIAL_COLLECT_STEPS,
 )
@@ -238,7 +238,7 @@ initial_collect_driver = collect_driver_factory._get_driver(
 gradient_based_trainer = GradientBasedTraining(
     train_env=train_py_env,
     replay_buffer_manager=replay_buffer_manager,
-    # replay_buffer_checkpoint_manager=replay_buffer_checkpoint_manager,
+    replay_buffer_checkpoint_manager=replay_buffer_checkpoint_manager,
     initial_collect_driver=initial_collect_driver,
     fitness_evaluator=fitness_evaluator,
     num_train_iteration=NUM_GRADIENT_BASED_TRAINING_EPOCH,
@@ -259,11 +259,10 @@ pretriner = Pretraining(
     running_pretraining_network=running_cartpole_pretraining_network,
     stable_pretraining_network=cartpole_pretraining_network,
     replay_buffer_manager=replay_buffer_manager,
-    optimizer=tf.keras.optimizers.Adam(learning_rate=0.0001),
+    optimizer=tf.keras.optimizers.Adam(learning_rate=INITIAL_LEARNING_RATE, decay=0.95),
     # replay_buffer_checkpoint_manager=
     num_iteration=NUM_PRETRAINING_ITERATION,
     batch_size=PRETRAINING_BATCH_SIZE,
-    replay_buffer_table_name=PRETRAINING_REPLAY_BUFFER_TABLE_NAME,
     tf_summary_base_dir=SUMMARY_BASE_DIR,
 )
 
@@ -275,7 +274,6 @@ population_based_training = PopulationBasedTraining(
     fitness_trakcer=fitness_tracker,
     parent_tracker=parent_tracker,
     best_possible_fitness=BEST_POSSIBLE_FITNESS,
-    replay_buffer_manager=replay_buffer_manager,
 )
 
 

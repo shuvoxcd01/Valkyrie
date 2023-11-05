@@ -7,24 +7,10 @@ import logging
 
 
 class DynamicStepDriverFactory(DriverFactory):
-    def __init__(self, common_observers: Optional[List] = None) -> None:
-        super().__init__(common_observers=common_observers)
-        self.logger = logging.getLogger(__file__)
+    def __init__(self, env: TFEnvironment, observers: List) -> None:
+        super().__init__(env=env, observers=observers)
 
-    def _get_driver(
-        self,
-        env: TFEnvironment,
-        observers: List,
-        policy: tf_policy.TFPolicy,
-        max_steps: int,
-    ):
-        self.logger.info(
-            f"""Creating dynamic step driver with the following params: 
-            env:{env}, 
-            observers: {observers}, 
-            policy: {policy}, 
-            max_steps: {max_steps} """
-        )
+    def get_driver(self, policy: tf_policy.TFPolicy, max_steps: int):
         return dynamic_step_driver.DynamicStepDriver(
-            env=env, policy=policy, observers=observers, num_steps=max_steps
+            env=self.env, policy=policy, observers=self.observers, num_steps=max_steps
         )

@@ -1,18 +1,28 @@
+from typing import List, Optional
 from singleton_decorator import singleton
 import tensorflow as tf
 import logging
-
+import math
 from Valkyrie.src.network.pretraining_network.base_pretraining_network import (
     BasePretrainingNetwork,
 )
 
 
 class CartPolePretrainingNetwork(BasePretrainingNetwork):
-    def __init__(self, input_tensor_spec, conv_layer_params, fc_layer_params, *args):
+    def __init__(
+        self,
+        input_tensor_spec,
+        encoder_fc_layer_params,
+        decoder_fc_layer_params,
+        *args,
+    ):
         super().__init__()
+
+        self.encoder_fc_layer_params = encoder_fc_layer_params
+        self.decoder_fc_layer_params = decoder_fc_layer_params
+
         self.decoder_output_shape = input_tensor_spec.shape
-        self.fc_layer_params = (128, 256, 256, 128, 50)
-        self.decoder_fc_layer_params = None
+
         self.encoder_network, self.encoder_layers = self._build_encoder()
         self.decoder_network = self._build_decoder()
 
@@ -40,20 +50,24 @@ class CartPolePretrainingNetwork(BasePretrainingNetwork):
             )
 
         dense_layers = [
-            self.create_dense_layer(num_units) for num_units in self.fc_layer_params
+            self.create_dense_layer(num_units)
+            for num_units in self.encoder_fc_layer_params
         ]
 
         return tf.keras.Sequential(dense_layers), dense_layers
 
     def _build_decoder(self):
-        decoder = tf.keras.Sequential(
-            [
-                tf.keras.layers.Dense(
-                    tf.math.reduce_prod(self.decoder_output_shape), activation="sigmoid"
-                ),
-                tf.keras.layers.Reshape(self.decoder_output_shape),
-            ]
-        )
+        decoder_head = [
+            tf.keras.layers.Dense(tf.math.reduce_prod(self.decoder_output_shape)),
+            tf.keras.layers.Reshape(self.decoder_output_shape),
+        ]
+
+        dense_layers = [
+            self.create_dense_layer(num_units)
+            for num_units in self.decoder_fc_layer_params
+        ]
+
+        decoder = tf.keras.Sequential(dense_layers + decoder_head)
 
         return decoder
 

@@ -115,8 +115,12 @@ class ReverbReplayBufferManager(ReplayBufferManager):
             server = self.servers_map.pop(table_name)
             server.stop()
             self.logger.debug(f"Server {server} stopped.")
-            self.table_names.remove(table_name)
+            del server
             self.logger.debug(f"Removed table {table_name} from servers map.")
+
+        if table_name in self.table_names:
+            self.table_names.remove(table_name)
+            self.logger.debug(f"Removed table {table_name} from table names.")
 
     def create_servers(self, table_names):
         self.logger.info(f"Creating servers for tables: {table_names}.")
